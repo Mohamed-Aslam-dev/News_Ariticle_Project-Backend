@@ -1,0 +1,75 @@
+openapi: 3.0.0
+info:
+  title: News Article API
+  version: 1.0.0
+  description: API for uploading and viewing user news articles (with image/video).
+
+paths:
+  /news:
+    get:
+      summary: Get all uploaded news articles
+      description: Returns a list of news articles uploaded by users.
+      responses:
+        "200":
+          description: List of news articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/News"
+
+    post:
+      summary: Upload a news article
+      description: Allows a user to upload a news article with media.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Heavy Rain in Chennai"
+                description:
+                  type: string
+                  example: "Traffic affected due to continuous heavy rainfall."
+                image:
+                  type: string
+                  format: binary
+                video:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: News article created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/News"
+
+components:
+  schemas:
+    News:
+      type: object
+      properties:
+        id:
+          type: Long
+          example: 1
+        title:
+          type: String
+          example: "Heavy Rain in Chennai"
+        description:
+          type: String
+          example: "Traffic affected due to continuous heavy rainfall."
+        imageOrVideoUrl:
+          type: String
+          example: "https://example.com/uploads/news1.jpg"
+        #videoUrl:
+          #type: string
+          #example: "https://example.com/uploads/news1.mp4"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-08-28T10:30:00Z"
