@@ -1,0 +1,31 @@
+package com.ilayangudi_news_posting.controllers;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ilayangudi_news_posting.dto.UserRegisterDTO;
+import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/auth")
+public class UserRegisterDataController {
+	
+	@Autowired
+	private UserRegisterDataServiceRepository userServiceRepo;
+	
+	@PostMapping("/new-user")
+	public ResponseEntity<String> addNewUser(@Valid @RequestBody UserRegisterDTO userDto){
+		
+		userServiceRepo.addNewUser(userDto);
+		
+		return new ResponseEntity<String>("புதிய பயனர் விவரம் சேகரிக்கப்பட்டது", HttpStatus.ACCEPTED);
+	}
+
+}
