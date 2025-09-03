@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ilayangudi_news_posting.dto.LoginRequestDTO;
 import com.ilayangudi_news_posting.dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
 
@@ -26,6 +27,20 @@ public class UserRegisterDataController {
 		userServiceRepo.addNewUser(userDto);
 		
 		return new ResponseEntity<String>("புதிய பயனர் விவரம் சேகரிக்கப்பட்டது", HttpStatus.ACCEPTED);
+	}
+	
+	@PostMapping("/user-login")
+	public ResponseEntity<String> loginUser(@Valid @RequestBody LoginRequestDTO loginRequest){
+		
+		Boolean isValid = userServiceRepo.loginUser(loginRequest);
+		
+		if(isValid) {
+	        return ResponseEntity.ok("உள்நுழைவு வெற்றிகரமாக நடைபெற்றது"); // Success in Tamil
+	    } else {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                             .body("உள்நுழைவு தோல்வி. சரியான விவரங்களை உள்ளிடவும்"); // Failed in Tamil
+	    }
+		
 	}
 
 }
