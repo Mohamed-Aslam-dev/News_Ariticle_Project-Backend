@@ -17,7 +17,7 @@ public class NewsImageAndVideoFile {
 
 		try {
 			// 1. Upload directory
-			String uploadDir = "C:/Users/newsUploads/";
+			String uploadDir = "D:/Users/newsUploads/";
 			File dir = new File(uploadDir);
 			if (!dir.exists())
 				dir.mkdirs();
