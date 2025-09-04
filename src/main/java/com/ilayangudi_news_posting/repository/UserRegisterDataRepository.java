@@ -14,5 +14,8 @@ public interface UserRegisterDataRepository extends JpaRepository<UserRegisterDa
 	
 	@Query("SELECT u FROM UserRegisterData u WHERE u.emailId = :login OR u.userMobileNumber = :login")
 	Optional<UserRegisterData> findByEmailIdOrUserMobileNumber(@Param("login") String login);
+	
+	boolean existsByEmailId(String emailId);
+	boolean existsByUserMobileNumber(String userMobileNumber);
 
 }

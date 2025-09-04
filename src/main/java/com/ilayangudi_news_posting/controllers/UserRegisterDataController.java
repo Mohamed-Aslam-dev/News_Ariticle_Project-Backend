@@ -3,11 +3,17 @@ package com.ilayangudi_news_posting.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ilayangudi_news_posting.configuration.AuthService;
+import com.ilayangudi_news_posting.configuration.JwtUtil;
+import com.ilayangudi_news_posting.dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.dto.LoginRequestDTO;
 import com.ilayangudi_news_posting.dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
@@ -21,6 +27,15 @@ public class UserRegisterDataController {
 	@Autowired
 	private UserRegisterDataServiceRepository userServiceRepo;
 	
+	@Autowired
+    private AuthenticationManager authManager;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+	
 	@PostMapping("/new-user")
 	public ResponseEntity<String> addNewUser(@Valid @RequestBody UserRegisterDTO userDto){
 		
@@ -30,16 +45,36 @@ public class UserRegisterDataController {
 	}
 	
 	@PostMapping("/user-login")
-	public ResponseEntity<String> loginUser(@Valid @RequestBody LoginRequestDTO loginRequest){
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
+        try {
+            // Authenticate
+            authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmailOrPhone(), request.getPassword())
+            );
+
+            // Load UserDetails
+            UserDetails userDetails = authService.loadUserByUsername(request.getEmailOrPhone());
+
+            // Generate JWT
+            String token = jwtUtil.generateToken(userDetails.getUsername());
+
+            return ResponseEntity.ok(token);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("உள்நுழைவதில் சிக்கல் உங்களுடைய மின்னஞ்சல்/தொலைபேசி எண் அல்லது கட்வுச்சொல்லை சரிபார்க்கவும்");
+        }
+    }
+	
+	@PostMapping("/user-forgetpassword")
+	public ResponseEntity<String> forgetPassword(@RequestBody ForgetPasswordDto forgetPasswordDto){
 		
-		Boolean isValid = userServiceRepo.loginUser(loginRequest);
+		boolean isValid = userServiceRepo.forgetPassword(forgetPasswordDto);
 		
 		if(isValid) {
-	        return ResponseEntity.ok("உள்நுழைவு வெற்றிகரமாக நடைபெற்றது"); // Success in Tamil
-	    } else {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                             .body("உள்நுழைவு தோல்வி. சரியான விவரங்களை உள்ளிடவும்"); // Failed in Tamil
-	    }
+			return ResponseEntity.ok("உங்களுடைய கடவுச்சொல் மாற்றப்பட்டது");
+		}
+		else {
+			return ResponseEntity.status(401).body("உங்களுடைய மின்னஞ்சல்/தொலைபேசி எண் சரிபார்க்கவும் அல்லது புதிய கணக்கை தொடங்கவும்");
+		}
 		
 	}
 
