@@ -59,29 +59,5 @@ public class EmailSenderService {
 		
 	}
 	
-public void sendEmailFromRegisterations(String toEmail, String name) {
-		
-		SimpleMailMessage messageOnMail = new SimpleMailMessage();
-		
-		messageOnMail.setTo(toEmail);
-		messageOnMail.setSubject("இளையான்குடி நியூஸ் - வரவேற்கிறோம்!");
-	    messageOnMail.setText(
-	        "அன்புள்ள " + name + ",\r\n" +
-	        "\r\n" +
-	        "இளையான்குடி நியூஸ்-ஐ தேர்ந்தெடுத்ததற்கு நன்றி.\r\n" +
-	        "உங்கள் புதிய பயனர் பதிவு வெற்றிகரமாக முடிந்துள்ளது.\r\n" +
-	        "\r\n" +
-	        "இளையான்குடி நியூஸ்-ஐப் பயன்படுத்தி நீங்கள் சமீபத்திய செய்திகளை நேரடியாக பெறலாம்.\r\n"
-	        +"உங்களுடைய ஆதரவை எங்களுக்கு தொடர்ந்து தாருங்கள். \r\n"
-	        +"நன்றி! \r\n" +
-	        "\r\n" +
-	        "அன்புடன்,\r\n" +
-	        "Spicy Coding \r\n" +
-	        "Software Development \r\n" +
-	        "சென்னை"
-	    );
-		mailSender.send(messageOnMail);
-		
-	}
 
 }
