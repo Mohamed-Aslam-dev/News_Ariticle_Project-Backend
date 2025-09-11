@@ -17,10 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilayangudi_news_posting.configuration.AuthService;
 import com.ilayangudi_news_posting.configuration.JwtUtil;
-import com.ilayangudi_news_posting.dto.ForgetPasswordDto;
-import com.ilayangudi_news_posting.dto.ForgetPasswordRequestDTO;
-import com.ilayangudi_news_posting.dto.LoginRequestDTO;
-import com.ilayangudi_news_posting.dto.UserRegisterDTO;
+import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
+import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
+import com.ilayangudi_news_posting.request_dto.LoginRequestDTO;
+import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
 
 import jakarta.validation.ConstraintViolation;

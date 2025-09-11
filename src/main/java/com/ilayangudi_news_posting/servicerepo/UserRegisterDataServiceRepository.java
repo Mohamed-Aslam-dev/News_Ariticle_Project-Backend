@@ -2,9 +2,9 @@ package com.ilayangudi_news_posting.servicerepo;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ilayangudi_news_posting.dto.ForgetPasswordDto;
-import com.ilayangudi_news_posting.dto.ForgetPasswordRequestDTO;
-import com.ilayangudi_news_posting.dto.UserRegisterDTO;
+import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
+import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
+import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 
 public interface UserRegisterDataServiceRepository {
 

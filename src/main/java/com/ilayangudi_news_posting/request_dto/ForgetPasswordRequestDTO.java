@@ -1,4 +1,4 @@
-package com.ilayangudi_news_posting.dto;
+package com.ilayangudi_news_posting.request_dto;
 
 import jakarta.validation.constraints.NotBlank;
 
