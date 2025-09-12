@@ -1,12 +1,15 @@
 package com.ilayangudi_news_posting.response_dto;
 
 import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class NewsResponseDTO {
 
 	private String newsTitle;
 	private String newsDescription;
-	private String imageOrVideoUrl;
+	private List<String> imageOrVideoUrl;
 	private String author;
 	private String category;
 	private String tags;
@@ -14,14 +17,16 @@ public class NewsResponseDTO {
 	private Long views;
 	private Long likes;
 	private Long unLikes;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Kolkata")
 	private Date createdAt;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Kolkata")
 	private Date updatedAt;
 
 	public NewsResponseDTO() {
 
 	}
 
-	public NewsResponseDTO(String newsTitle, String newsDescription, String imageOrVideoUrl, String author,
+	public NewsResponseDTO(String newsTitle, String newsDescription, List<String> imageOrVideoUrl, String author,
 			String category, String tags, String status, Long views, Long likes, Long unLikes,
 			Date createdAt, Date updatedAt) {
 		super();
@@ -55,11 +60,11 @@ public class NewsResponseDTO {
 		this.newsDescription = newsDescription;
 	}
 
-	public String getImageOrVideoUrl() {
+	public List<String> getImageOrVideoUrl() {
 		return imageOrVideoUrl;
 	}
 
-	public void setImageOrVideoUrl(String imageOrVideoUrl) {
+	public void setImageOrVideoUrl(List<String> imageOrVideoUrl) {
 		this.imageOrVideoUrl = imageOrVideoUrl;
 	}
 

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,6 +13,18 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class NewsImageAndVideoFile {
 
+	public List<String> getNewsImageAndVideoFilepaths(MultipartFile[] files, String outputPath) throws IOException {
+	    List<String> savedPaths = new ArrayList<>();
+	    if (files != null) {
+	        for (MultipartFile file : files) {
+	            if (!file.isEmpty()) {
+	                savedPaths.add(getNewsImageAndVideoFilepath(file, outputPath));
+	            }
+	        }
+	    }
+	    return savedPaths;
+	}
+	
 	public String getNewsImageAndVideoFilepath(MultipartFile file, String outputPath) throws IOException {
 
 		try {

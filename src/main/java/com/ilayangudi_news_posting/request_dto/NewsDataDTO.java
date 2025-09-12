@@ -16,8 +16,6 @@ public class NewsDataDTO {
 	@NotBlank(message = "செய்தி விவரத்தை கண்டிப்பாக உள்ளிடவும்")
 	private String newsDescription; // TEXT → no max limit
 
-	private MultipartFile imageOrVideoUrl; // optional
-
 	@NotBlank(message = "வகை (Category) கண்டிப்பாக உள்ளிடவும்")
 	@Size(max = 50, message = "வகை அதிகபட்சம் 50 எழுத்துகள் இருக்கலாம்")
 	private String category;
@@ -33,14 +31,13 @@ public class NewsDataDTO {
 
 	public NewsDataDTO(
 			@NotBlank(message = "செய்தி தலைப்பை கண்டிப்பாக உள்ளிடவும்") @Size(max = 200, message = "தலைப்பு அதிகபட்சம் 200 எழுத்துகள் மட்டுமே உள்ளிட முடியும்") String newsTitle,
-			@NotBlank(message = "செய்தி விவரத்தை கண்டிப்பாக உள்ளிடவும்") String newsDescription, MultipartFile imageOrVideoUrl,
+			@NotBlank(message = "செய்தி விவரத்தை கண்டிப்பாக உள்ளிடவும்") String newsDescription, 
 			@NotBlank(message = "வகை (Category) கண்டிப்பாக உள்ளிடவும்") @Size(max = 50, message = "வகை அதிகபட்சம் 50 எழுத்துகள் இருக்கலாம்") String category,
 			@Size(max = 5, message = "அதிகபட்சம் 5 குறிச்சொற்கள் (Tags) சேர்க்கலாம்") List<String> tags,
 			NewsStatus status) {
 		super();
 		this.newsTitle = newsTitle;
 		this.newsDescription = newsDescription;
-		this.imageOrVideoUrl = imageOrVideoUrl;
 		this.category = category;
 		this.tags = tags;
 		this.status = status;
@@ -60,14 +57,6 @@ public class NewsDataDTO {
 
 	public void setNewsDescription(String newsDescription) {
 		this.newsDescription = newsDescription;
-	}
-
-	public MultipartFile getImageOrVideoUrl() {
-		return imageOrVideoUrl;
-	}
-
-	public void setImageOrVideoUrl(MultipartFile imageOrVideoUrl) {
-		this.imageOrVideoUrl = imageOrVideoUrl;
 	}
 
 	public String getCategory() {
@@ -96,8 +85,10 @@ public class NewsDataDTO {
 
 	@Override
 	public String toString() {
-		return "NewsDataDTO [newsTitle=" + newsTitle + ", newsDescription=" + newsDescription + ", imageOrVideoUrl="
-				+ imageOrVideoUrl + ", category=" + category + ", tags=" + tags + ", status=" + status + "]";
+		return "NewsDataDTO [newsTitle=" + newsTitle + ", newsDescription=" + newsDescription + ", category=" + category
+				+ ", tags=" + tags + ", status=" + status + "]";
 	}
+
+	
 
 }

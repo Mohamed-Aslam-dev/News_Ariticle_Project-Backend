@@ -1,6 +1,7 @@
 package com.ilayangudi_news_posting.controllers;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,25 +34,32 @@ public class NewsDataController {
 	@PostMapping(value = "/upload")
 	public ResponseEntity<?> uploadNews(
 	        @RequestPart("newsData") String newsDataJson,
-	        @RequestPart(value = "file", required = false) MultipartFile file, Principal principal) throws Exception {
+	        @RequestPart(value = "file", required = false) MultipartFile[] files,
+	        Principal principal) throws Exception {
 
 	    ObjectMapper mapper = new ObjectMapper();
 	    NewsDataDTO newsDataDto = mapper.readValue(newsDataJson, NewsDataDTO.class);
-	    
-	 // Manual validation
+
+	    // ✅ Manual validation
 	    Set<ConstraintViolation<NewsDataDTO>> violations = validator.validate(newsDataDto);
 	    if (!violations.isEmpty()) {
-	        StringBuilder errors = new StringBuilder();
+	        List<String> errors = new ArrayList<>();
 	        for (ConstraintViolation<NewsDataDTO> violation : violations) {
-	            errors.append(violation.getMessage()).append("\n");
+	            errors.add(violation.getMessage());
 	        }
-	        return new ResponseEntity<>(errors.toString(), HttpStatus.BAD_REQUEST);
+	        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 	    }
 
-	    newsService.addANewsData(newsDataDto, file, principal);
+	    // ✅ File validations
+	    if (files != null && files.length > 3) {
+	        return new ResponseEntity<>("Maximum 3 files allowed", HttpStatus.BAD_REQUEST);
+	    }
+
+	    newsService.addANewsData(newsDataDto, files, principal);
 
 	    return ResponseEntity.ok("செய்தி வெற்றிகரமாக சேமிக்கப்பட்டது!");
 	}
+	
 	
 	@GetMapping(value = "/home", produces = "application/json" )
 	public ResponseEntity<List<NewsResponseDTO>> getNewsDataFromHomePage() {

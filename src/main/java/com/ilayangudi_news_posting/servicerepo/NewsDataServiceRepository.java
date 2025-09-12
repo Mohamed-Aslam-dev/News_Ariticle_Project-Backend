@@ -9,7 +9,7 @@ import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 
 public interface NewsDataServiceRepository {
 	
-	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile file, Principal principal);
+	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] file, Principal principal);
 	
 	List<NewsResponseDTO> getNewsDataFromHomePage();
 

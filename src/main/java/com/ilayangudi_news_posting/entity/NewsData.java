@@ -27,7 +27,8 @@ public class NewsData {
 	private String newsTitle;
 	@Column(columnDefinition = "TEXT")
 	private String newsDescription;
-	private String imageOrVideoUrl;
+	@Convert(converter = NewsTagsConverter.class) // same approach like tags
+	private List<String> imageOrVideoUrl = new ArrayList<>();
 	private String author;
 	private String category;
 	@Convert(converter = NewsTagsConverter.class)
@@ -49,7 +50,7 @@ public class NewsData {
 
 	}
 
-	public NewsData(Long sNo, String newsTitle, String newsDescription, String imageOrVideoUrl, String author,
+	public NewsData(Long sNo, String newsTitle, String newsDescription, List<String> imageOrVideoUrl, String author,
 			String category, List<String> tags, NewsStatus status, Long views, Long likes, Long unLikes, Long reports,
 			Date createdAt, Date updatedAt) {
 		super();
@@ -165,11 +166,11 @@ public class NewsData {
 		this.newsDescription = newsDescription;
 	}
 
-	public String getImageOrVideoUrl() {
+	public List<String> getImageOrVideoUrl() {
 		return imageOrVideoUrl;
 	}
 
-	public void setImageOrVideoUrl(String imageOrVideoUrl) {
+	public void setImageOrVideoUrl(List<String> imageOrVideoUrl) {
 		this.imageOrVideoUrl = imageOrVideoUrl;
 	}
 

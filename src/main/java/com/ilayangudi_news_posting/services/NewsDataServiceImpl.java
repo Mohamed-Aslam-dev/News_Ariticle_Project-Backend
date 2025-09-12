@@ -2,6 +2,7 @@ package com.ilayangudi_news_posting.services;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,20 +26,17 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	private NewsDataRepository newsDataRepository;
 	
 	@Autowired
-	private UserRegisterDataRepository userRegisterDataRepository;
-	
-	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
 	
-	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile file, Principal principal) {
+	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] files, Principal principal) {
 	    try {
-	    	String uploadDir = "D:/Users/newsUploads/";
-	        String imagePath = newsFileStore.getNewsImageAndVideoFilepath(file, uploadDir);
+	        String uploadDir = "D:/Users/newsUploads/";
+	        List<String> imagePaths = newsFileStore.getNewsImageAndVideoFilepaths(files, uploadDir);
 
 	        NewsData newsData = new NewsData();
 	        newsData.setNewsTitle(newsDataDto.getNewsTitle());
 	        newsData.setNewsDescription(newsDataDto.getNewsDescription());
-	        newsData.setImageOrVideoUrl(imagePath);
+	        newsData.setImageOrVideoUrl(imagePaths); // ✅ multiple files
 	        newsData.setAuthor(principal.getName());
 	        newsData.setCategory(newsDataDto.getCategory());
 	        newsData.setTags(newsDataDto.getTags());
@@ -47,38 +45,43 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	        newsDataRepository.save(newsData);
 
 	    } catch (IOException e) {
-	        // log & rethrow as runtime so global handler can catch
 	        throw new RuntimeException("Error while saving news file", e);
 	    }
 	}
-
-	@Override
-    public List<NewsResponseDTO> getNewsDataFromHomePage() {
-        Pageable limit = PageRequest.of(0, 3);
-        List<NewsData> latestNews = newsDataRepository.findTop3LatestNews(limit);
-
-        return latestNews.stream().map(news -> {
-            NewsResponseDTO dto = new NewsResponseDTO();
-            dto.setNewsTitle(news.getNewsTitle());
-            dto.setNewsDescription(news.getNewsDescription());
-            dto.setImageOrVideoUrl(
-                (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty())
-                    ? news.getImageOrVideoUrl()
-                    : "/images/default-news.png"
-            );
-            dto.setAuthor(news.getAuthor());
-            dto.setCategory(news.getCategory());
-            dto.setTags(news.getTags().toString()); 
-            dto.setStatus(news.getStatus().name());
-            dto.setViews(news.getViews());
-            dto.setLikes(news.getLikes());
-            dto.setUnLikes(news.getUnLikes());
-            dto.setCreatedAt(news.getCreatedAt());
-            dto.setUpdatedAt(news.getUpdatedAt());
-            return dto;
-        }).toList();
-    }
-
 	
+	@Override
+	public List<NewsResponseDTO> getNewsDataFromHomePage() {
+	    Pageable limit = PageRequest.of(0, 4);
+	    List<NewsData> latestNews = newsDataRepository.findTop3LatestNews(limit);
+
+	    return latestNews.stream().map(news -> {
+	        NewsResponseDTO dto = new NewsResponseDTO();
+	        dto.setNewsTitle(news.getNewsTitle());
+	        dto.setNewsDescription(news.getNewsDescription());
+
+	        // ✅ Convert String -> List<String>
+	        List<String> imageUrls;
+	        if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+	            // already List<String> irukku
+	            imageUrls = news.getImageOrVideoUrl();
+	        } else {
+	            imageUrls = List.of("/images/default-news.png");
+	        }
+	        dto.setImageOrVideoUrl(imageUrls);
+
+	        dto.setAuthor(news.getAuthor());
+	        dto.setCategory(news.getCategory());
+	        dto.setTags(news.getTags().toString());
+	        dto.setStatus(news.getStatus().name());
+	        dto.setViews(news.getViews());
+	        dto.setLikes(news.getLikes());
+	        dto.setUnLikes(news.getUnLikes());
+	        dto.setCreatedAt(news.getCreatedAt());
+	        dto.setUpdatedAt(news.getUpdatedAt());
+	        return dto;
+	    }).toList();
+	}
+
+
 
 }
