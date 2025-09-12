@@ -19,10 +19,13 @@ public class HandleExceptions {
 	    List<String> errorMessages = new ArrayList<>();
 
 	    validException.getBindingResult().getAllErrors().forEach((error) -> {
-	        errorMessages.add(error.getDefaultMessage()); // Only message
+	        errorMessages.add(error.getDefaultMessage());
 	    });
 
-	    return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+	    // Convert list → single string with comma separation
+	    String finalErrorMessage = String.join(", ", errorMessages);
+
+	    return new ResponseEntity<>(finalErrorMessage, HttpStatus.BAD_REQUEST);
 	}
 	
 	@ExceptionHandler(IOException.class)
