@@ -12,7 +12,7 @@ import com.ilayangudi_news_posting.entity.NewsData;
 @Repository
 public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 	
-	@Query("SELECT n FROM NewsData n ORDER BY COALESCE(n.updatedAt, n.createdAt) DESC")
-	List<NewsData> findTop3LatestNews(Pageable pageable);
+	@Query("SELECT n FROM NewsData n WHERE n.status = 'PUBLISHED' ORDER BY COALESCE(n.updatedAt, n.createdAt) DESC")
+	List<NewsData> findTop4LatestNews(Pageable pageable);
 
 }

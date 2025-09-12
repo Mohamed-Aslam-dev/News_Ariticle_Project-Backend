@@ -52,10 +52,11 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	@Override
 	public List<NewsResponseDTO> getNewsDataFromHomePage() {
 	    Pageable limit = PageRequest.of(0, 4);
-	    List<NewsData> latestNews = newsDataRepository.findTop3LatestNews(limit);
+	    List<NewsData> latestNews = newsDataRepository.findTop4LatestNews(limit);
 
 	    return latestNews.stream().map(news -> {
 	        NewsResponseDTO dto = new NewsResponseDTO();
+	        dto.setsNo(news.getsNo());
 	        dto.setNewsTitle(news.getNewsTitle());
 	        dto.setNewsDescription(news.getNewsDescription());
 

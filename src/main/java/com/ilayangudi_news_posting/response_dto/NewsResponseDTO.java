@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class NewsResponseDTO {
 
+	private Long sNo;
 	private String newsTitle;
 	private String newsDescription;
 	private List<String> imageOrVideoUrl;
@@ -26,10 +27,11 @@ public class NewsResponseDTO {
 
 	}
 
-	public NewsResponseDTO(String newsTitle, String newsDescription, List<String> imageOrVideoUrl, String author,
-			String category, String tags, String status, Long views, Long likes, Long unLikes,
+	public NewsResponseDTO(Long sNo, String newsTitle, String newsDescription, List<String> imageOrVideoUrl,
+			String author, String category, String tags, String status, Long views, Long likes, Long unLikes,
 			Date createdAt, Date updatedAt) {
 		super();
+		this.sNo = sNo;
 		this.newsTitle = newsTitle;
 		this.newsDescription = newsDescription;
 		this.imageOrVideoUrl = imageOrVideoUrl;
@@ -42,6 +44,14 @@ public class NewsResponseDTO {
 		this.unLikes = unLikes;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+	}
+	
+	public Long getsNo() {
+		return sNo;
+	}
+
+	public void setsNo(Long sNo) {
+		this.sNo = sNo;
 	}
 
 	public String getNewsTitle() {
@@ -142,10 +152,10 @@ public class NewsResponseDTO {
 
 	@Override
 	public String toString() {
-		return "NewsResponseDTO [newsTitle=" + newsTitle + ", newsDescription=" + newsDescription + ", imageOrVideoUrl="
-				+ imageOrVideoUrl + ", author=" + author + ", category=" + category + ", tags=" + tags + ", status="
-				+ status + ", views=" + views + ", likes=" + likes + ", unLikes=" + unLikes + ", createdAt=" + createdAt
-				+ ", updatedAt=" + updatedAt + "]";
+		return "NewsResponseDTO [sNo=" + sNo + ", newsTitle=" + newsTitle + ", newsDescription=" + newsDescription
+				+ ", imageOrVideoUrl=" + imageOrVideoUrl + ", author=" + author + ", category=" + category + ", tags="
+				+ tags + ", status=" + status + ", views=" + views + ", likes=" + likes + ", unLikes=" + unLikes
+				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
 	}
 
 }
