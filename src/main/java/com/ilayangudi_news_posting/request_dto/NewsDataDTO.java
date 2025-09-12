@@ -1,8 +1,6 @@
 package com.ilayangudi_news_posting.request_dto;
 
 import java.util.List;
-
-import org.springframework.web.multipart.MultipartFile;
 import com.ilayangudi_news_posting.enums.NewsStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -8,17 +8,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ilayangudi_news_posting.entity.NewsData;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
-
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
 @RestController
@@ -67,6 +71,24 @@ public class NewsDataController {
 	    return ResponseEntity.ok(latestNews);
 	}
 	
+//	@PutMapping("/update-news/{id}")
+//	public ResponseEntity<?> updateNewsData(@PathVariable Long id,
+//	                                        @Valid @RequestBody NewsDataDTO dto) {
+//	    NewsData existing = newsDataRepository.findById(id)
+//	            .orElseThrow(() -> new RuntimeException("News not found with id: " + id));
+//
+//	    // ✅ Update only fields from DTO
+//	    existing.setNewsTitle(dto.getNewsTitle());
+//	    existing.setNewsDescription(dto.getNewsDescription());
+//	    existing.setCategory(dto.getCategory());
+//	    existing.setTags(dto.getTags());
+//	    existing.setStatus(dto.getStatus());
+//
+//	    // Auto fields (views, likes, reports, createdAt) untouched
+//	    newsDataRepository.save(existing);
+//
+//	    return ResponseEntity.ok("News updated successfully!");
+//	}
 	
 	
 

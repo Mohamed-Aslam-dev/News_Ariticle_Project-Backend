@@ -52,7 +52,8 @@ public class NewsImageAndVideoFile {
 			file.transferTo(new File(filePath));
 
 			// 6. Return only relative path (to store in DB)
-			return filePath;
+			// ✅ Instead of returning Windows path, return URL
+	        return "http://localhost:8080/images/" + uniqueFileName;
 		} catch (IOException io) {
 			throw new RuntimeException("Error while saving news file", io);
 		}

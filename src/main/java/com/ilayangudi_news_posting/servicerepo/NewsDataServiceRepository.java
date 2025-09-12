@@ -12,5 +12,7 @@ public interface NewsDataServiceRepository {
 	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] file, Principal principal);
 	
 	List<NewsResponseDTO> getNewsDataFromHomePage();
+	
+	NewsDataDTO getNewsForEdit(Long sNo);
 
 }

@@ -83,6 +83,20 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	    }).toList();
 	}
 
+	@Override
+	public NewsDataDTO getNewsForEdit(Long sNo) {
+	    NewsData news = newsDataRepository.findById(sNo)
+	            .orElseThrow(() -> new RuntimeException("News not found with id: " + sNo));
+
+	    // Convert Entity -> DTO
+	    NewsDataDTO dto = new NewsDataDTO();
+	    dto.setNewsTitle(news.getNewsTitle());
+	    dto.setNewsDescription(news.getNewsDescription());
+	    dto.setCategory(news.getCategory());
+	    dto.setTags(news.getTags());
+	    dto.setStatus(news.getStatus());
+	    return dto;
+	}
 
 
 }
