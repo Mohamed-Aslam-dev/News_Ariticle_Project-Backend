@@ -97,7 +97,7 @@ public class UserRegisterDataController {
 		boolean exists = userServiceRepo.generateResetToken(forgetPasswordRequest);
 
 		if (exists) {
-			return ResponseEntity.ok("பயனர் உள்ளது, கடவுச்சொல்லை மாற்றும் பக்கத்திற்கு செல்லவும்");
+			return ResponseEntity.ok("OTP அனுப்பபட்டது , மின்னஞ்சலை பார்க்கவும்");
 		} else {
 			return ResponseEntity.status(404).body(
 					"உங்கள் மின்னஞ்சல்/தொலைபேசி எண் கிடைக்கவில்லை, நீங்கள் மீண்டும் உள்நுழைவு பக்கம் வழியாக உள்நுழையவும்");

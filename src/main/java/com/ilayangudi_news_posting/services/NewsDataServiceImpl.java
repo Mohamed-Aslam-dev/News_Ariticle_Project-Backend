@@ -68,7 +68,8 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	            // already List<String> irukku
 	            imageUrls = news.getImageOrVideoUrl();
 	        } else {
-	            imageUrls = List.of("/images/default-news.png");
+	            imageUrls = List.of("பயனர் புகைப்படம் மற்றும் வீடியோ பதிவேற்றவில்லை");
+//	            throw new RuntimeException("Image or Video not found for this news");
 	        }
 	        dto.setImageOrVideoUrl(imageUrls);
 

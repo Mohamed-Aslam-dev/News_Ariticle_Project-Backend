@@ -45,5 +45,12 @@ public class HandleExceptions {
                 .body("கோப்பின் அளவு மிக அதிகம்! அதிகபட்சமாக அனுமதிக்கப்பட்ட அளவு 50MB தான்.");
     }
 	
+	@ExceptionHandler(ResourcesNotFoundException.class)
+    public ResponseEntity<String> resourcesNotFoundExceptionException(ResourcesNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.PAYLOAD_TOO_LARGE)  // 413
+                .body(ex.getMessage());
+    }
+	
 
 }
