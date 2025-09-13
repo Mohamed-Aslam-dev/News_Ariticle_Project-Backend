@@ -11,18 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ilayangudi_news_posting.entity.NewsData;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
 @RestController
@@ -56,7 +53,7 @@ public class NewsDataController {
 
 	    // ✅ File validations
 	    if (files != null && files.length > 3) {
-	        return new ResponseEntity<>("Maximum 3 files allowed", HttpStatus.BAD_REQUEST);
+	        return new ResponseEntity<>("அதிகபட்சமாக 3 கோப்புகள் மட்டுமே அனுப்ப முடியும்", HttpStatus.BAD_REQUEST);
 	    }
 
 	    newsService.addANewsData(newsDataDto, files, principal);
@@ -89,6 +86,21 @@ public class NewsDataController {
 //
 //	    return ResponseEntity.ok("News updated successfully!");
 //	}
+	
+	@PutMapping("/{id}/like")
+    public ResponseEntity<?> newsPostLikes(@PathVariable Long id) {
+        return ResponseEntity.ok(newsService.addNewsLike(id));
+    }
+
+    @PutMapping("/{id}/unlike")
+    public ResponseEntity<?> newsPostUnLikes(@PathVariable Long id) {
+        return ResponseEntity.ok(newsService.addNewsUnLike(id));
+    }
+
+    @PutMapping("/{id}/views")
+    public ResponseEntity<?> newsPostViews(@PathVariable Long id) {
+        return ResponseEntity.ok(newsService.addNewsViews(id));
+    }
 	
 	
 

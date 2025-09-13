@@ -2,19 +2,18 @@ package com.ilayangudi_news_posting.services;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.ilayangudi_news_posting.entity.NewsData;
+import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
 import com.ilayangudi_news_posting.enums.NewsStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.repository.NewsDataRepository;
-import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
+import com.ilayangudi_news_posting.repository.NewsStatusRepository;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
@@ -26,12 +25,15 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	private NewsDataRepository newsDataRepository;
 	
 	@Autowired
+	private NewsStatusRepository newsStatusRepository;
+	
+	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
 	
 	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] files, Principal principal) {
 	    try {
-	        String uploadDir = "D:/Users/newsUploads/";
-	        List<String> imagePaths = newsFileStore.getNewsImageAndVideoFilepaths(files, uploadDir);
+	        String uploadFolder = "newsUploads";
+	        List<String> imagePaths = newsFileStore.getNewsImageAndVideoFilepaths(files, uploadFolder);
 
 	        NewsData newsData = new NewsData();
 	        newsData.setNewsTitle(newsDataDto.getNewsTitle());
@@ -74,9 +76,16 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	        dto.setCategory(news.getCategory());
 	        dto.setTags(news.getTags().toString());
 	        dto.setStatus(news.getStatus().name());
-	        dto.setViews(news.getViews());
-	        dto.setLikes(news.getLikes());
-	        dto.setUnLikes(news.getUnLikes());
+	     // ✅ Engagement (from NewsEngagedStatus)
+	        if (news.getNewsEngagedStatus() != null) {
+	            dto.setViews(news.getNewsEngagedStatus().getViews());
+	            dto.setLikes(news.getNewsEngagedStatus().getLikes());
+	            dto.setUnLikes(news.getNewsEngagedStatus().getUnLikes());
+	        } else {
+	            dto.setViews(0L);
+	            dto.setLikes(0L);
+	            dto.setUnLikes(0L);
+	        }
 	        dto.setCreatedAt(news.getCreatedAt());
 	        dto.setUpdatedAt(news.getUpdatedAt());
 	        return dto;
@@ -98,5 +107,38 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	    return dto;
 	}
 
+	public NewsEngagedStatus addNewsLike(Long id) {
+		NewsData news = newsDataRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("News not found"));
+        NewsEngagedStatus status = newsStatusRepository.findByNews(news)
+                .orElse(new NewsEngagedStatus());
+
+        status.setNews(news);
+        status.setLikes(status.getLikes() + 1);
+        return newsStatusRepository.save(status);
+    }
+
+    public NewsEngagedStatus addNewsUnLike(Long id) {
+    	NewsData news = newsDataRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("News not found"));
+        NewsEngagedStatus status = newsStatusRepository.findByNews(news)
+                .orElse(new NewsEngagedStatus());
+        
+        status.setNews(news);
+        status.setUnLikes(status.getUnLikes() + 1);
+        return newsStatusRepository.save(status);
+    }
+
+    public NewsEngagedStatus addNewsViews(Long id) {
+    	NewsData news = newsDataRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("News not found"));
+        NewsEngagedStatus status = newsStatusRepository.findByNews(news)
+                .orElse(new NewsEngagedStatus());
+        
+        status.setNews(news);
+        status.setViews(status.getViews() + 1);
+        return newsStatusRepository.save(status);
+    }
+	
 
 }

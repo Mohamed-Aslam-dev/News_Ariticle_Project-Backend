@@ -7,6 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import com.ilayangudi_news_posting.convertor.NewsTagsConverter;
 import com.ilayangudi_news_posting.enums.NewsStatus;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -15,6 +17,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -28,6 +31,7 @@ public class NewsData {
 	@Column(columnDefinition = "TEXT")
 	private String newsDescription;
 	@Convert(converter = NewsTagsConverter.class) // same approach like tags
+	@Column(length = 1000)
 	private List<String> imageOrVideoUrl = new ArrayList<>();
 	private String author;
 	private String category;
@@ -35,24 +39,24 @@ public class NewsData {
 	private List<String> tags = new ArrayList<>();
 	@Enumerated(EnumType.STRING)
 	private NewsStatus status;
-	private Long views = 0L;
-	private Long likes = 0L;
-	private Long unLikes = 0L;
-	private Long reports = 0L;
 	@CreationTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdAt;
 	@UpdateTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date updatedAt;
+	
+	// Relationship
+    @OneToOne(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
+    private NewsEngagedStatus newsEngagedStatus;
 
 	public NewsData() {
 
 	}
 
 	public NewsData(Long sNo, String newsTitle, String newsDescription, List<String> imageOrVideoUrl, String author,
-			String category, List<String> tags, NewsStatus status, Long views, Long likes, Long unLikes, Long reports,
-			Date createdAt, Date updatedAt) {
+			String category, List<String> tags, NewsStatus status, Date createdAt, Date updatedAt,
+			NewsEngagedStatus newsEngagedStatus) {
 		super();
 		this.sNo = sNo;
 		this.newsTitle = newsTitle;
@@ -62,12 +66,9 @@ public class NewsData {
 		this.category = category;
 		this.tags = tags;
 		this.status = status;
-		this.views = views;
-		this.likes = likes;
-		this.unLikes = unLikes;
-		this.reports = reports;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.newsEngagedStatus = newsEngagedStatus;
 	}
 
 	public Long getsNo() {
@@ -104,38 +105,6 @@ public class NewsData {
 
 	public void setStatus(NewsStatus status) {
 		this.status = status;
-	}
-
-	public Long getViews() {
-		return views;
-	}
-
-	public void setViews(Long views) {
-		this.views = views;
-	}
-
-	public Long getLikes() {
-		return likes;
-	}
-
-	public void setLikes(Long likes) {
-		this.likes = likes;
-	}
-
-	public Long getUnLikes() {
-		return unLikes;
-	}
-
-	public void setUnLikes(Long unLikes) {
-		this.unLikes = unLikes;
-	}
-
-	public Long getReports() {
-		return reports;
-	}
-
-	public void setReports(Long reports) {
-		this.reports = reports;
 	}
 
 	public Date getUpdatedAt() {
@@ -182,12 +151,20 @@ public class NewsData {
 		this.createdAt = createdAt;
 	}
 
+	public NewsEngagedStatus getNewsEngagedStatus() {
+		return newsEngagedStatus;
+	}
+
+	public void setNewsEngagedStatus(NewsEngagedStatus newsEngagedStatus) {
+		this.newsEngagedStatus = newsEngagedStatus;
+	}
+
 	@Override
 	public String toString() {
 		return "NewsData [sNo=" + sNo + ", newsTitle=" + newsTitle + ", newsDescription=" + newsDescription
 				+ ", imageOrVideoUrl=" + imageOrVideoUrl + ", author=" + author + ", category=" + category + ", tags="
-				+ tags + ", status=" + status + ", views=" + views + ", likes=" + likes + ", unLikes=" + unLikes
-				+ ", reports=" + reports + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
+				+ tags + ", status=" + status + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt
+				+ ", newsEngagedStatus=" + newsEngagedStatus + "]";
 	}
 
 }

@@ -7,56 +7,69 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import reactor.core.publisher.Mono;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import reactor.core.publisher.Flux;
 
 @Service
 public class NewsImageAndVideoFile {
 
-	public List<String> getNewsImageAndVideoFilepaths(MultipartFile[] files, String outputPath) throws IOException {
-	    List<String> savedPaths = new ArrayList<>();
-	    if (files != null) {
-	        for (MultipartFile file : files) {
-	            if (!file.isEmpty()) {
-	                savedPaths.add(getNewsImageAndVideoFilepath(file, outputPath));
-	            }
-	        }
-	    }
-	    return savedPaths;
-	}
-	
-	public String getNewsImageAndVideoFilepath(MultipartFile file, String outputPath) throws IOException {
+    private final WebClient webClient;
 
-		try {
-			// 1. Upload directory
-			
-			File dir = new File(outputPath);
-			if (!dir.exists())
-				dir.mkdirs();
+    @Value("${supabase.url}")
+    private String supabaseUrl;
 
-			// 2. Original file extension
-			String originalFileName = file.getOriginalFilename();
-			String extension = "";
-			if (originalFileName != null && originalFileName.contains(".")) {
-				extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-			}
+    @Value("${supabase.key}")
+    private String supabaseKey;
 
-			// 3. Generate unique filename (UUID + timestamp)
-			String uniqueFileName = UUID.randomUUID().toString() + "_"
-					+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + extension;
+    @Value("${supabase.bucket}")
+    private String bucketName;
 
-			// 4. File path
-			String filePath = outputPath + uniqueFileName;
+    public NewsImageAndVideoFile(WebClient.Builder builder) {
+        this.webClient = builder.build();
+    }
 
-			// 5. Save file
-			file.transferTo(new File(filePath));
+    public List<String> getNewsImageAndVideoFilepaths(MultipartFile[] files, String folder) throws IOException {
+        return Flux.fromArray(files)
+            .filter(file -> !file.isEmpty())
+            .flatMap(file -> Mono.fromCallable(() -> getNewsImageAndVideoFilepath(file, folder)))
+            .collectList()
+            .block(); // waits for all uploads
+    }
 
-			// 6. Return only relative path (to store in DB)
-			// ✅ Instead of returning Windows path, return URL
-	        return "http://localhost:8080/images/" + uniqueFileName;
-		} catch (IOException io) {
-			throw new RuntimeException("Error while saving news file", io);
-		}
-	}
+    public String getNewsImageAndVideoFilepath(MultipartFile file, String folder) throws IOException{
+        try {
+            String originalFileName = file.getOriginalFilename();
+            String extension = (originalFileName != null && originalFileName.contains(".")) ?
+                    originalFileName.substring(originalFileName.lastIndexOf(".")) : "";
 
+            String uniqueFileName = UUID.randomUUID().toString() + "_"
+                    + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + extension;
+
+            String filePath = folder + "/" + uniqueFileName;
+
+            String url = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + filePath;
+
+            webClient.post()
+                    .uri(url)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
+                    .header(HttpHeaders.CONTENT_TYPE, "application/octet-stream")
+                    .bodyValue(new InputStreamResource(file.getInputStream()))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            return supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + filePath;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error uploading file: " + file.getOriginalFilename(), e);
+        }
+    }
 }
+
