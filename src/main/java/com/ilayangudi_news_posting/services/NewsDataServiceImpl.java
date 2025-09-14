@@ -2,6 +2,7 @@ package com.ilayangudi_news_posting.services;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -56,41 +57,15 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
 	    Pageable limit = PageRequest.of(0, 4);
 	    List<NewsData> latestNews = newsDataRepository.findTop4LatestNews(limit);
 
-	    return latestNews.stream().map(news -> {
-	        NewsResponseDTO dto = new NewsResponseDTO();
-	        dto.setsNo(news.getsNo());
-	        dto.setNewsTitle(news.getNewsTitle());
-	        dto.setNewsDescription(news.getNewsDescription());
+	    return getNewsDatas(latestNews);
+	}
+	
+	@Override
+	public List<NewsResponseDTO> getLastOneMonthNewsData() {
+		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+	    List<NewsData> lastOneMonthNews = newsDataRepository.findPublishedNewsLastMonth(oneMonthAgo);
 
-	        // ✅ Convert String -> List<String>
-	        List<String> imageUrls;
-	        if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-	            // already List<String> irukku
-	            imageUrls = news.getImageOrVideoUrl();
-	        } else {
-	            imageUrls = List.of("பயனர் புகைப்படம் மற்றும் வீடியோ பதிவேற்றவில்லை");
-//	            throw new RuntimeException("Image or Video not found for this news");
-	        }
-	        dto.setImageOrVideoUrl(imageUrls);
-
-	        dto.setAuthor(news.getAuthor());
-	        dto.setCategory(news.getCategory());
-	        dto.setTags(news.getTags().toString());
-	        dto.setStatus(news.getStatus().name());
-	     // ✅ Engagement (from NewsEngagedStatus)
-	        if (news.getNewsEngagedStatus() != null) {
-	            dto.setViews(news.getNewsEngagedStatus().getViews());
-	            dto.setLikes(news.getNewsEngagedStatus().getLikes());
-	            dto.setUnLikes(news.getNewsEngagedStatus().getUnLikes());
-	        } else {
-	            dto.setViews(0L);
-	            dto.setLikes(0L);
-	            dto.setUnLikes(0L);
-	        }
-	        dto.setCreatedAt(news.getCreatedAt());
-	        dto.setUpdatedAt(news.getUpdatedAt());
-	        return dto;
-	    }).toList();
+	    return getNewsDatas(lastOneMonthNews);
 	}
 
 	@Override
@@ -141,5 +116,44 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository{
         return newsStatusRepository.save(status);
     }
 	
+    private List<NewsResponseDTO> getNewsDatas(List<NewsData> newsList){
+    	
+    	return newsList.stream().map(news -> {
+	        NewsResponseDTO dto = new NewsResponseDTO();
+	        dto.setsNo(news.getsNo());
+	        dto.setNewsTitle(news.getNewsTitle());
+	        dto.setNewsDescription(news.getNewsDescription());
+
+	        // ✅ Convert String -> List<String>
+	        List<String> imageUrls;
+	        if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+	            // already List<String> irukku
+	            imageUrls = news.getImageOrVideoUrl();
+	        } else {
+	            imageUrls = null;
+//	            throw new RuntimeException("Image or Video not found for this news");
+	        }
+	        dto.setImageOrVideoUrl(imageUrls);
+
+	        dto.setAuthor(news.getAuthor());
+	        dto.setCategory(news.getCategory());
+	        dto.setTags(news.getTags().toString());
+	        dto.setStatus(news.getStatus().name());
+	     // ✅ Engagement (from NewsEngagedStatus)
+	        if (news.getNewsEngagedStatus() != null) {
+	            dto.setViews(news.getNewsEngagedStatus().getViews());
+	            dto.setLikes(news.getNewsEngagedStatus().getLikes());
+	            dto.setUnLikes(news.getNewsEngagedStatus().getUnLikes());
+	        } else {
+	            dto.setViews(0L);
+	            dto.setLikes(0L);
+	            dto.setUnLikes(0L);
+	        }
+	        dto.setCreatedAt(news.getCreatedAt());
+	        dto.setUpdatedAt(news.getUpdatedAt());
+	        return dto;
+	    }).toList();
+    	
+    }
 
 }
