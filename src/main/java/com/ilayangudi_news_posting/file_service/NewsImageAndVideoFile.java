@@ -71,5 +71,23 @@ public class NewsImageAndVideoFile {
             throw new RuntimeException("Error uploading file: " + file.getOriginalFilename(), e);
         }
     }
+    
+    public void deleteFileFromSupabase(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) return;
+
+        // fileUrl la irundhu relative path extract pannanum
+        // ex: https://xyz.supabase.co/storage/v1/object/public/mybucket/userProfilePics/abc.jpg
+        String relativePath = fileUrl.substring(fileUrl.indexOf(bucketName) + bucketName.length() + 1);
+
+        String url = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + relativePath;
+
+        webClient.delete()
+            .uri(url)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
+            .retrieve()
+            .bodyToMono(Void.class)
+            .block();
+    }
+    
 }
 

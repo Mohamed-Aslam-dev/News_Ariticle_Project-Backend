@@ -1,7 +1,6 @@
 package com.ilayangudi_news_posting.controllers;
 
 import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
 import com.ilayangudi_news_posting.request_dto.LoginRequestDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -138,5 +136,6 @@ public class UserRegisterDataController {
 			return ResponseEntity.status(400).body("தவறான அல்லது காலாவதியான Token");
 		}
 	}
+	
 
 }

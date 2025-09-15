@@ -23,7 +23,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**","/news/home", "/images/**").permitAll()   // login & register open
-                .requestMatchers("/news/**").authenticated() // news protected
+                .requestMatchers("/news/**","/user/**").authenticated() // news protected
                 .anyRequest().denyAll()
             )
             // ✅ Correctly placed session management for JWT (stateless)

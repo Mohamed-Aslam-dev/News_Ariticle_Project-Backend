@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.ilayangudi_news_posting.entity.UserRegisterData;
 
 @Repository
@@ -21,6 +20,6 @@ public interface UserRegisterDataRepository extends JpaRepository<UserRegisterDa
 
 	Optional<UserRegisterData> findByResetToken(String resetToken);
 
-	UserRegisterData findByEmailId(String email);
+	Optional<UserRegisterData> findByEmailId(String email);
 
 }

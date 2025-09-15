@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.message_services.EmailSenderService;
@@ -73,7 +72,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 		try {
 			UserRegisterData userRegisterdata = new UserRegisterData();
 			if (profilePic != null && !profilePic.isEmpty()) {
-				String uploadDir = "D:/Users/userProfilePics/";
+				String uploadDir = "userProfilePics";
 				String imagePath = newsFileStore.getNewsImageAndVideoFilepath(profilePic, uploadDir);
 				userRegisterdata.setProfilePicUrl(imagePath);
 			} else {
