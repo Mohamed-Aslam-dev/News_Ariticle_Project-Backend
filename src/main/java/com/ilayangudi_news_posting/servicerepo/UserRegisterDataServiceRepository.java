@@ -8,6 +8,8 @@ import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 
 public interface UserRegisterDataServiceRepository {
 
+	public void newUserEmailVerified(String email, String mobileNumber);
+	
 	public void addNewUser(UserRegisterDTO userDataDto, MultipartFile profilePic);
 
 	public boolean generateResetToken(ForgetPasswordRequestDTO forgetPasswordRequest);

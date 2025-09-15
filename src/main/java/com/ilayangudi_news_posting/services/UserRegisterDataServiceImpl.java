@@ -13,6 +13,7 @@ import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.message_services.EmailSenderService;
 import com.ilayangudi_news_posting.message_services.OtpGenerateService;
 import com.ilayangudi_news_posting.message_services.SmsService;
+import com.ilayangudi_news_posting.repository.OtpRepository;
 import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
@@ -27,6 +28,9 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 	@Autowired
 	private UserRegisterDataRepository userDataRepo;
 	
+	@Autowired
+	private OtpRepository otpRepo;
+
 	@Autowired
 	private EmailSenderService emailSenderService;
 
@@ -46,18 +50,26 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 //        this.appConfiguration = appConfiguration;
 //    }
 
-	@Override
-	public void addNewUser(UserRegisterDTO userDataDto, MultipartFile profilePic) {
-
+	public void newUserEmailVerified(String email, String mobileNumber) {
 		// Check duplicate by email
-		if (userDataRepo.existsByEmailId(userDataDto.getEmailId())) {
+		if (userDataRepo.existsByEmailId(email)) {
 			throw new RuntimeException("இந்த மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது");
 		}
 
 		// Check duplicate by mobile
-		if (userDataRepo.existsByUserMobileNumber(userDataDto.getUserMobileNumber())) {
+		if (userDataRepo.existsByUserMobileNumber(mobileNumber)) {
 			throw new RuntimeException("இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது");
 		}
+		
+		// Remove any previous OTP for this email
+	    otpRepo.deleteByEmail(email);
+		
+		otpGenerateService.generateOtp(email);
+	}
+
+	@Override
+	public void addNewUser(UserRegisterDTO userDataDto, MultipartFile profilePic) {
+
 		try {
 			UserRegisterData userRegisterdata = new UserRegisterData();
 			if (profilePic != null && !profilePic.isEmpty()) {
@@ -74,11 +86,11 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 			userRegisterdata.setPassword(passwordEncoder.encode(userDataDto.getPassword()));
 			userRegisterdata.setRole("USER");
 
-			emailSenderService.sendEmailFromRegisteration(userRegisterdata.getEmailId(), userRegisterdata.getUserName());
-			
-			userDataRepo.save(userRegisterdata);	
-			
-			
+			emailSenderService.sendEmailFromRegisteration(userRegisterdata.getEmailId(),
+					userRegisterdata.getUserName());
+
+			userDataRepo.save(userRegisterdata);
+
 		} catch (IOException e) {
 			// log & rethrow as runtime so global handler can catch
 			throw new RuntimeException("Error while saving profile pic", e);
@@ -96,7 +108,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 
 			String token = otpGenerateService.generateToken();
 			LocalDateTime expiry = LocalDateTime.now().plusMinutes(10); // 10 mins expiry
-			//Mobile SMS
+			// Mobile SMS
 //			String otpSmsMessage = "[SpicyCoding] Hi "+user.getUserName()+", your OTP is: " + token
 //					+ " (valid for 10 mins). Please do not share.";
 //			System.out.println(user.getUserMobileNumber());
@@ -105,7 +117,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 			user.setResetToken(token);
 			user.setResetTokenExpiry(expiry);
 			userDataRepo.save(user);
-			
+
 			emailSenderService.sendOTPToEmail(user.getEmailId(), user.getUserName(), token);
 
 			// TODO: send token via Email/SMS (later you can integrate)

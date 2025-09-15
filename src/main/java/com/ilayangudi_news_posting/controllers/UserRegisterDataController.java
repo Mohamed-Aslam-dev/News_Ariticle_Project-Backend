@@ -11,12 +11,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilayangudi_news_posting.configuration.AuthService;
 import com.ilayangudi_news_posting.configuration.JwtUtil;
+import com.ilayangudi_news_posting.message_services.OtpGenerateService;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
 import com.ilayangudi_news_posting.request_dto.LoginRequestDTO;
@@ -46,30 +48,50 @@ public class UserRegisterDataController {
 	@Autowired
 	private Validator validator;
 
+	@Autowired
+	private OtpGenerateService otpService;
+
 	@PostMapping("/new-user")
-	public ResponseEntity<String> addNewUser(
-	        @RequestPart("userRegisterData") String userDataJson,
-	        @RequestPart(value = "profilePic", required = false) MultipartFile profilePic
-	) throws Exception {
+	public ResponseEntity<String> addNewUser(@RequestPart("userRegisterData") String userDataJson,
+			@RequestPart(value = "profilePic", required = false) MultipartFile profilePic) throws Exception {
 
-	    ObjectMapper mapper = new ObjectMapper();
-	    UserRegisterDTO userRegisterData = mapper.readValue(userDataJson, UserRegisterDTO.class);
+		ObjectMapper mapper = new ObjectMapper();
+		UserRegisterDTO userRegisterData = mapper.readValue(userDataJson, UserRegisterDTO.class);
 
-	    // Manual validation
-	    Set<ConstraintViolation<UserRegisterDTO>> violations = validator.validate(userRegisterData);
-	    if (!violations.isEmpty()) {
-	        StringBuilder errors = new StringBuilder();
-	        for (ConstraintViolation<UserRegisterDTO> violation : violations) {
-	            errors.append(violation.getMessage()).append("\n");
-	        }
-	        return new ResponseEntity<>(errors.toString(), HttpStatus.BAD_REQUEST);
-	    }
+		if (!userRegisterData.isEmailVerified()) {
+			return new ResponseEntity<>("மின்னஞ்சல் verify செய்யப்படவில்லை", HttpStatus.BAD_REQUEST);
+		}
 
-	    userServiceRepo.addNewUser(userRegisterData, profilePic);
+		// Manual validation
+		Set<ConstraintViolation<UserRegisterDTO>> violations = validator.validate(userRegisterData);
+		if (!violations.isEmpty()) {
+			StringBuilder errors = new StringBuilder();
+			for (ConstraintViolation<UserRegisterDTO> violation : violations) {
+				errors.append(violation.getMessage()).append("\n");
+			}
+			return new ResponseEntity<>(errors.toString(), HttpStatus.BAD_REQUEST);
+		}
 
-	    return new ResponseEntity<>("புதிய பயனர் விவரம் சேகரிக்கப்பட்டது", HttpStatus.ACCEPTED);
+		userServiceRepo.addNewUser(userRegisterData, profilePic);
+
+		return new ResponseEntity<>("புதிய பயனர் விவரம் சேகரிக்கப்பட்டது", HttpStatus.ACCEPTED);
 	}
 
+	@PostMapping("/send-otp")
+	public ResponseEntity<String> sendOtp(@RequestParam String email, @RequestParam String mobilenumber) {
+		userServiceRepo.newUserEmailVerified(email, mobilenumber);
+		return ResponseEntity.ok(email + "இந்த மின்னஞ்சலுக்கு ஒரு முறை கடவுச்சொல்(OTP) அனுப்பபட்டது");
+	}
+
+	@PostMapping("/verify-otp")
+	public ResponseEntity<String> verifyOtp(@RequestParam String email, @RequestParam String otp) throws Exception {
+		boolean isValid = otpService.verifyOtp(email, otp);
+
+		if (!isValid) {
+			return new ResponseEntity<>("OTP தவறானது அல்லது காலாவதியானது.", HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>("மின்னஞ்சல் சரிபார்ப்பு வெற்றிகரமாக முடிந்தது.", HttpStatus.ACCEPTED);
+	}
 
 	@PostMapping("/user-login")
 	public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request) {
@@ -92,7 +114,8 @@ public class UserRegisterDataController {
 	}
 
 	@PostMapping("/forget-password/request")
-	public ResponseEntity<String> forgetPasswordRequest(@Valid @RequestBody ForgetPasswordRequestDTO forgetPasswordRequest) {
+	public ResponseEntity<String> forgetPasswordRequest(
+			@Valid @RequestBody ForgetPasswordRequestDTO forgetPasswordRequest) {
 
 		boolean exists = userServiceRepo.generateResetToken(forgetPasswordRequest);
 
