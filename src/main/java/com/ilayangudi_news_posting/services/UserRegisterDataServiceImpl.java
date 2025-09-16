@@ -19,6 +19,8 @@ import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepository {
 
@@ -49,6 +51,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 //        this.appConfiguration = appConfiguration;
 //    }
 
+	@Transactional
 	public void newUserEmailVerified(String email, String mobileNumber) {
 		// Check duplicate by email
 		if (userDataRepo.existsByEmailId(email)) {
