@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ilayangudi_news_posting.convertor.NewsTagsConverter;
 import com.ilayangudi_news_posting.enums.NewsStatus;
 import jakarta.persistence.CascadeType;
@@ -47,6 +49,7 @@ public class NewsData {
 	
 	// Relationship
     @OneToOne(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private NewsEngagedStatus newsEngagedStatus;
 
 	public NewsData() {

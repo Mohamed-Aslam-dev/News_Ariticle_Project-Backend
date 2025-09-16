@@ -3,6 +3,7 @@ package com.ilayangudi_news_posting.controllers;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +20,7 @@ public class UserPageController {
 
 	@Autowired
 	private UserPageServiceRepository userPageServiceRepo;
+	
 
 	@PatchMapping("/mod/profile")
 	public ResponseEntity<String> changeUserProfile(@RequestPart("newProfile") MultipartFile newUserProfile,
@@ -36,11 +38,10 @@ public class UserPageController {
 
 		if (isDeleted) {
 			return ResponseEntity.ok("உங்கள் சுயவிவர புகைபடம்(Profile) வெற்றிகரமாக நீக்கப்பட்டது");
-
 		}
 
-		return ResponseEntity.ok("ஏற்கனவே நீங்கள் சுயவிவர புகைபடம்(Profile) பதிவேற்றவில்லை");
-
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body("ஏற்கனவே நீங்கள் சுயவிவர புகைபடம்(Profile) பதிவேற்றவில்லை");
 	}
 
 }

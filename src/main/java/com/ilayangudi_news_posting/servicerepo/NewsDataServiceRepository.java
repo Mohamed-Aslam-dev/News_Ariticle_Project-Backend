@@ -2,7 +2,6 @@ package com.ilayangudi_news_posting.servicerepo;
 
 import java.security.Principal;
 import java.util.List;
-
 import org.springframework.web.multipart.MultipartFile;
 import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
@@ -18,10 +17,16 @@ public interface NewsDataServiceRepository {
 
 	NewsDataDTO getNewsForEdit(Long sNo);
 
-	public NewsEngagedStatus addNewsLike(Long id);
+	public NewsEngagedStatus toggleLike(Long newsId, String username);
 
-	public NewsEngagedStatus addNewsUnLike(Long id);
+	public NewsEngagedStatus toggleUnLike(Long newsId, String username);
 
-	public NewsEngagedStatus addNewsViews(Long id);
+	public NewsEngagedStatus addView(Long newsId, String username);
+	
+	public boolean newsPostMoveToArchive(Long id, Principal principal);
+	
+	public boolean newsPostMoveToDraft(Long id, Principal principal);
+	
+	public boolean newsPostMoveToPublished(Long id, Principal principal);
 
 }

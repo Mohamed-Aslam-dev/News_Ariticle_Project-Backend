@@ -94,20 +94,57 @@ public class NewsDataController {
 
 	// 👍 Like increment
 	@PatchMapping("/{id}/like")
-	public ResponseEntity<NewsEngagedStatus> addLike(@PathVariable Long id) {
-		return ResponseEntity.ok(newsService.addNewsLike(id));
+	public ResponseEntity<NewsEngagedStatus> toggleLike(
+	        @PathVariable Long id, Principal principal) {
+	    return ResponseEntity.ok(newsService.toggleLike(id, principal.getName()));
 	}
 
 	// 👎 Unlike increment
 	@PatchMapping("/{id}/unlike")
-	public ResponseEntity<NewsEngagedStatus> addUnLike(@PathVariable Long id) {
-		return ResponseEntity.ok(newsService.addNewsUnLike(id));
+	public ResponseEntity<NewsEngagedStatus> addUnLike(@PathVariable Long id, Principal principal) {
+		return ResponseEntity.ok(newsService.toggleUnLike(id, principal.getName()));
 	}
 
 	// 👀 Views increment
 	@PatchMapping("/{id}/views")
-	public ResponseEntity<NewsEngagedStatus> addView(@PathVariable Long id) {
-		return ResponseEntity.ok(newsService.addNewsViews(id));
+	public ResponseEntity<NewsEngagedStatus> addView(@PathVariable Long id, Principal principal) {
+		return ResponseEntity.ok(newsService.addView(id, principal.getName()));
 	}
 
+	@PatchMapping("/post/{id}/archived")
+	public ResponseEntity<String> postMoveToArchive(@PathVariable Long id, Principal principal) {
+	    boolean isArchived = newsService.newsPostMoveToArchive(id, principal);
+
+	    if (isArchived) {
+	        return ResponseEntity.ok("செய்தி வெற்றிகரமாக காப்பகத்திற்கு(Archived) மாற்றப்பட்டது.");
+	    } else {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
+	    }
+	}
+	
+	@PatchMapping("/post/{id}/draft")
+	public ResponseEntity<String> postMoveToDraft(@PathVariable Long id, Principal principal) {
+	    boolean isDrafted = newsService.newsPostMoveToDraft(id, principal);
+
+	    if (isDrafted) {
+	    	return ResponseEntity.ok("செய்தி வெற்றிகரமாக வரைவு (Draft) நிலைக்கு மாற்றப்பட்டது.");
+	    } else {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
+	    }
+	}
+	
+	@PatchMapping("/post/{id}/published")
+	public ResponseEntity<String> postMoveToPublished(@PathVariable Long id, Principal principal) {
+	    boolean isPublished = newsService.newsPostMoveToPublished(id, principal);
+
+	    if (isPublished) {
+	    	return ResponseEntity.ok("செய்தி வெற்றிகரமாக வெளியிடப்பட்ட (Published) நிலைக்கு மாற்றப்பட்டது.");
+	    } else {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
+	    }
+	}
+	
 }

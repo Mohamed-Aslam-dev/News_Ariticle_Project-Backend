@@ -28,7 +28,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 
 	@Autowired
 	private UserRegisterDataRepository userDataRepo;
-	
+
 	@Autowired
 	private OtpRepository otpRepo;
 
@@ -62,10 +62,10 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 		if (userDataRepo.existsByUserMobileNumber(mobileNumber)) {
 			throw new RuntimeException("இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது");
 		}
-		
+
 		// Remove any previous OTP for this email
-	    otpRepo.deleteByEmail(email);
-		
+		otpRepo.deleteByEmail(email);
+
 		otpGenerateService.generateOtp(email);
 	}
 
@@ -124,7 +124,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 
 			// TODO: send token via Email/SMS (later you can integrate)
 
-			System.out.println("Reset Token: " + token);
+//			System.out.println("Reset Token: " + token);
 
 			return true;
 		}
