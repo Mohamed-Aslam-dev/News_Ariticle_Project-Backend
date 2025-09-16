@@ -1,5 +1,7 @@
 package com.ilayangudi_news_posting.request_dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -20,7 +22,8 @@ public class UserRegisterDTO {
 	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{6,}$", message = "கடவுச்சொல் குறைந்தது 1 பெரிய எழுத்து, 1 சிறிய எழுத்து, 1 எண் மற்றும் 1–3 சிறப்பு எழுத்துக்கள் கொண்டிருக்க வேண்டும்")
 	private String password;
 	
-	private boolean isEmailVerified = false;
+	@JsonProperty("isEmailVerified")
+	private boolean emailVerified = false;
 
 	public UserRegisterDTO() {
 
@@ -36,7 +39,7 @@ public class UserRegisterDTO {
 		this.emailId = emailId;
 		this.userMobileNumber = userMobileNumber;
 		this.password = password;
-		this.isEmailVerified = isEmailVerified;
+		this.emailVerified = isEmailVerified;
 	}
 
 	public String getUserName() {
@@ -72,17 +75,18 @@ public class UserRegisterDTO {
 	}
 
 	public boolean isEmailVerified() {
-		return isEmailVerified;
+	    return emailVerified;
 	}
 
-	public void setEmailVerified(boolean isEmailVerified) {
-		this.isEmailVerified = isEmailVerified;
+	public void setEmailVerified(boolean emailVerified) {
+	    this.emailVerified = emailVerified;
 	}
+
 
 	@Override
 	public String toString() {
 		return "UserRegisterDTO [userName=" + userName + ", emailId=" + emailId + ", userMobileNumber="
-				+ userMobileNumber + ", password=" + password + ", isEmailVerified=" + isEmailVerified + "]";
+				+ userMobileNumber + ", password=" + password + ", isEmailVerified=" + emailVerified + "]";
 	}
 
 }
