@@ -18,9 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilayangudi_news_posting.configuration.AuthService;
 import com.ilayangudi_news_posting.configuration.JwtUtil;
 import com.ilayangudi_news_posting.message_services.OtpGenerateService;
+import com.ilayangudi_news_posting.request_dto.EmailVerifiedRequestDTO;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
 import com.ilayangudi_news_posting.request_dto.LoginRequestDTO;
+import com.ilayangudi_news_posting.request_dto.OtpVerificationRequestDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
 import jakarta.validation.ConstraintViolation;
@@ -76,18 +78,22 @@ public class UserRegisterDataController {
 	}
 
 	@PostMapping("/send-otp")
-	public ResponseEntity<String> sendOtp(@RequestParam String email, @RequestParam String mobilenumber) {
-		userServiceRepo.newUserEmailVerified(email, mobilenumber);
-		return ResponseEntity.ok(email + "இந்த மின்னஞ்சலுக்கு ஒரு முறை கடவுச்சொல்(OTP) அனுப்பபட்டது");
+	public ResponseEntity<String> sendOtp(@RequestBody EmailVerifiedRequestDTO emailVerifiedRequest) {
+		userServiceRepo.newUserEmailVerified(emailVerifiedRequest.getEmail(), emailVerifiedRequest.getMobileNumber());
+		return ResponseEntity
+				.ok(emailVerifiedRequest.getEmail() + " இந்த மின்னஞ்சலுக்கு ஒரு முறை கடவுச்சொல்(OTP) அனுப்பபட்டது");
 	}
 
 	@PostMapping("/verify-otp")
-	public ResponseEntity<String> verifyOtp(@RequestParam String email, @RequestParam String otp) throws Exception {
-		boolean isValid = otpService.verifyOtp(email, otp);
+	public ResponseEntity<String> verifyOtp(@RequestBody OtpVerificationRequestDTO otpVerificationRequest)
+			throws Exception {
+		boolean isValid = otpService.verifyOtp(otpVerificationRequest.getEmail(), otpVerificationRequest.getOtp());
 
 		if (!isValid) {
+
 			return new ResponseEntity<>("OTP தவறானது அல்லது காலாவதியானது.", HttpStatus.BAD_REQUEST);
 		}
+
 		return new ResponseEntity<>("மின்னஞ்சல் சரிபார்ப்பு வெற்றிகரமாக முடிந்தது.", HttpStatus.ACCEPTED);
 	}
 
@@ -136,6 +142,5 @@ public class UserRegisterDataController {
 			return ResponseEntity.status(400).body("தவறான அல்லது காலாவதியான Token");
 		}
 	}
-	
 
 }

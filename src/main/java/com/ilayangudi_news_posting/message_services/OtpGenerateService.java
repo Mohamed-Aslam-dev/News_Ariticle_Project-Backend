@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ilayangudi_news_posting.repository.OtpRepository;
+import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 
 @Service
 public class OtpGenerateService {
@@ -20,10 +21,10 @@ public class OtpGenerateService {
 
 	@Autowired
 	private OtpRepository otpRepo;
-	
+
 	@Autowired
 	private PasswordEncoder passwordEncoder;
-	
+
 	@Autowired
 	private EmailSenderService emailSenderService;
 
@@ -40,7 +41,7 @@ public class OtpGenerateService {
 	public String generateOtp(String email) {
 		String otp = String.valueOf(new SecureRandom().nextInt(900000) + 100000);
 		// optional: encode
-		 String hashedOtp = passwordEncoder.encode(otp);
+		String hashedOtp = passwordEncoder.encode(otp);
 
 		OtpData otpData = otpRepo.findByEmail(email).orElseGet(OtpData::new);
 		otpData.setEmail(email);
@@ -54,20 +55,23 @@ public class OtpGenerateService {
 	}
 
 	public boolean verifyOtp(String email, String otp) {
-	    Optional<OtpData> optional = otpRepo.findByEmail(email);
-	    if(optional.isEmpty()) return false;
+		Optional<OtpData> optional = otpRepo.findByEmail(email);
+		if (optional.isEmpty())
+			return false;
 
-	    OtpData data = optional.get();
+		OtpData data = optional.get();
 
-	    if(data.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
-	        otpRepo.delete(data);
-	        return false; // expired
-	    }
+		if (data.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
+			otpRepo.delete(data);
+			return false; // expired
+		}
 
-	    boolean isValid = passwordEncoder.matches(otp, data.getOtp());
-	    if(isValid) otpRepo.delete(data); // one-time use
+		boolean isValid = passwordEncoder.matches(otp, data.getOtp());
 
-	    return isValid;
+		if (isValid)
+			otpRepo.delete(data); // one-time use
+
+		return isValid;
 	}
 
 }
