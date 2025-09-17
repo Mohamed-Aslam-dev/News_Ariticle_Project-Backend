@@ -33,13 +33,12 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
 	@Autowired
 	private NewsStatusRepository newsStatusRepository;
-	
+
 	@Autowired
 	private NewsUserEngagementRepository newsUserEngagementRepo;
 
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
-	
 
 	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] files, Principal principal) {
 		try {
@@ -95,85 +94,106 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
 	@Transactional
 	public NewsEngagedStatus toggleLike(Long newsId, String username) {
-	    NewsData news = newsDataRepository.findById(newsId)
-	            .orElseThrow(() -> new RuntimeException("News not found"));
+		NewsData news = newsDataRepository.findById(newsId).orElseThrow(() -> new RuntimeException("News not found"));
 
-	    NewsUserEngagement engagement = newsUserEngagementRepo
-	            .findByNewsAndUsername(news, username)
-	            .orElse(new NewsUserEngagement(null, username, false, false, false, news));
+		NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
+				.orElse(new NewsUserEngagement(null, username, false, false, false, news));
 
-	    NewsEngagedStatus status = news.getNewsEngagedStatus();
-	    if (status == null) {
-	        status = new NewsEngagedStatus();
-	        status.setNews(news);
-	    }
+		NewsEngagedStatus status = news.getNewsEngagedStatus();
+		if (status == null) {
+			status = new NewsEngagedStatus();
+			status.setNews(news);
+		}
 
-	    if (engagement.isLiked()) {
-	        engagement.setLiked(false);
-	        status.setLikes(status.getLikes() - 1);
-	    } else {
-	        engagement.setLiked(true);
-	        status.setLikes(status.getLikes() + 1);
-	        addView(newsId, username);
-	    }
+		if (engagement.isLiked()) {
+			engagement.setLiked(false);
+			status.setLikes(status.getLikes() - 1);
+		} else {
+			engagement.setLiked(true);
+			status.setLikes(status.getLikes() + 1);
+			addView(newsId, username);
+		}
 
-	    newsUserEngagementRepo.save(engagement);
-	    newsStatusRepository.save(status);
-	    return status;
+		newsUserEngagementRepo.save(engagement);
+		newsStatusRepository.save(status);
+		return status;
 	}
 
 	@Transactional
 	public NewsEngagedStatus toggleUnLike(Long newsId, String username) {
-	    NewsData news = newsDataRepository.findById(newsId)
-	            .orElseThrow(() -> new RuntimeException("News not found"));
+		NewsData news = newsDataRepository.findById(newsId).orElseThrow(() -> new RuntimeException("News not found"));
 
-	    NewsUserEngagement engagement = newsUserEngagementRepo
-	            .findByNewsAndUsername(news, username)
-	            .orElse(new NewsUserEngagement(null, username, false, false, false, news));
+		NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
+				.orElse(new NewsUserEngagement(null, username, false, false, false, news));
 
-	    NewsEngagedStatus status = news.getNewsEngagedStatus();
-	    if (status == null) {
-	        status = new NewsEngagedStatus();
-	        status.setNews(news);
-	    }
+		NewsEngagedStatus status = news.getNewsEngagedStatus();
+		if (status == null) {
+			status = new NewsEngagedStatus();
+			status.setNews(news);
+		}
 
-	    if (engagement.isDisliked()) {
-	        engagement.setDisliked(false);
-	        status.setUnLikes(status.getUnLikes() - 1);
-	    } else {
-	        engagement.setDisliked(true);
-	        status.setUnLikes(status.getUnLikes() + 1);
-	        addView(newsId, username);
-	    }
+		if (engagement.isDisliked()) {
+			engagement.setDisliked(false);
+			status.setUnLikes(status.getUnLikes() - 1);
+		} else {
+			engagement.setDisliked(true);
+			status.setUnLikes(status.getUnLikes() + 1);
+			addView(newsId, username);
+		}
 
-	    newsUserEngagementRepo.save(engagement);
-	    newsStatusRepository.save(status);
-	    return status;
+		newsUserEngagementRepo.save(engagement);
+		newsStatusRepository.save(status);
+		return status;
 	}
 
 	@Transactional
 	public NewsEngagedStatus addView(Long newsId, String username) {
-	    NewsData news = newsDataRepository.findById(newsId)
-	            .orElseThrow(() -> new RuntimeException("News not found"));
+		NewsData news = newsDataRepository.findById(newsId).orElseThrow(() -> new RuntimeException("News not found"));
 
-	    NewsUserEngagement engagement = newsUserEngagementRepo
-	            .findByNewsAndUsername(news, username)
-	            .orElse(new NewsUserEngagement(null, username, false, false, false, news));
+		NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
+				.orElse(new NewsUserEngagement(null, username, false, false, false, news));
 
-	    NewsEngagedStatus status = news.getNewsEngagedStatus();
-	    if (status == null) {
-	        status = new NewsEngagedStatus();
-	        status.setNews(news);
-	    }
+		NewsEngagedStatus status = news.getNewsEngagedStatus();
+		if (status == null) {
+			status = new NewsEngagedStatus();
+			status.setNews(news);
+		}
 
-	    if (!engagement.isViewed()) {
-	        engagement.setViewed(true);
-	        status.setViews(status.getViews() + 1);
-	    }
+		if (!engagement.isViewed()) {
+			engagement.setViewed(true);
+			status.setViews(status.getViews() + 1);
+		}
 
-	    newsUserEngagementRepo.save(engagement);
-	    newsStatusRepository.save(status);
-	    return status;
+		newsUserEngagementRepo.save(engagement);
+		newsStatusRepository.save(status);
+		return status;
+	}
+
+	@Override
+	public List<NewsResponseDTO> getLastOneMonthPublishedNewsData(Principal principal) {
+		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+		List<NewsData> lastOneMonthPublishedNews = newsDataRepository.findUserPublishedNewsLastMonth(oneMonthAgo,
+				principal.getName());
+
+		return getNewsDatas(lastOneMonthPublishedNews);
+	}
+
+	@Override
+	public List<NewsResponseDTO> getLastOneMonthArchievedNewsData(Principal principal) {
+		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+		List<NewsData> lastOneMonthArchivedNews = newsDataRepository.findUserArchievedNewsLastMonth(oneMonthAgo,
+				principal.getName());
+
+		return getNewsDatas(lastOneMonthArchivedNews);
+	}
+
+	@Override
+	public List<NewsResponseDTO> getLastOneMonthDraftNewsData(Principal principal) {
+		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+		List<NewsData> lastOneMonthDraftNews = newsDataRepository.findUserDraftNewsLastMonth(oneMonthAgo,
+				principal.getName());
+
+		return getNewsDatas(lastOneMonthDraftNews);
 	}
 
 	public boolean newsPostMoveToArchive(Long id, Principal principal) {

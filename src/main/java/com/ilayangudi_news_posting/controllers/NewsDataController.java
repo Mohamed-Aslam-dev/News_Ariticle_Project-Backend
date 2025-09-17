@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
+import com.ilayangudi_news_posting.response_dto.ApiResponse;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
 import jakarta.validation.ConstraintViolation;
@@ -53,7 +54,8 @@ public class NewsDataController {
 
 		// ✅ File validations
 		if (files != null && files.length > 3) {
-			return new ResponseEntity<>("அதிகபட்சமாக 3 கோப்புகள்(images/videos) மட்டுமே அனுப்ப முடியும்", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("அதிகபட்சமாக 3 கோப்புகள்(images/videos) மட்டுமே அனுப்ப முடியும்",
+					HttpStatus.BAD_REQUEST);
 		}
 
 		newsService.addANewsData(newsDataDto, files, principal);
@@ -62,15 +64,62 @@ public class NewsDataController {
 	}
 
 	@GetMapping(value = "/home", produces = "application/json")
-	public ResponseEntity<List<NewsResponseDTO>> getNewsDataFromHomePage() {
+	public ResponseEntity<?> getNewsDataFromHomePage() {
 		List<NewsResponseDTO> latestNews = newsService.getNewsDataFromHomePage();
-		return ResponseEntity.ok(latestNews);
+		if (latestNews.isEmpty()) {
+			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
+		}
+
+		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", latestNews));
 	}
-	
+
 	@GetMapping("/all")
-	public ResponseEntity<List<NewsResponseDTO>> getLastOneMonthNewsData(){
+	public ResponseEntity<?> getLastOneMonthNewsData() {
 		List<NewsResponseDTO> lastOneMonthNews = newsService.getLastOneMonthNewsData();
-		return ResponseEntity.ok(lastOneMonthNews);
+		if (lastOneMonthNews.isEmpty()) {
+			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
+		}
+
+		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthNews));
+	}
+
+	@GetMapping("/all/published")
+	public ResponseEntity<?> getLastOneMonthPublishedNewsData(Principal principal) {
+		List<NewsResponseDTO> lastOneMonthPublishedNews = newsService.getLastOneMonthPublishedNewsData(principal);
+
+		if (lastOneMonthPublishedNews.isEmpty()) {
+			return ResponseEntity.ok(new ApiResponse<>(
+					"நீங்கள் எந்த செய்தியும் வெளியிடப்படவில்லை / It looks like you haven’t published any posts.",
+					null));
+		}
+
+		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthPublishedNews));
+	}
+
+	@GetMapping("/all/archived")
+	public ResponseEntity<?> getLastOneMonthArchivedNewsData(Principal principal) {
+		List<NewsResponseDTO> lastOneMonthArchievedNews = newsService.getLastOneMonthArchievedNewsData(principal);
+
+		if (lastOneMonthArchievedNews.isEmpty()) {
+			return ResponseEntity.ok(new ApiResponse<>(
+					"நீங்கள் எந்த செய்தியும் காப்பக நிலையில் வைக்கவில்லை / It looks like you haven’t Archived any posts.",
+					null));
+		}
+
+		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthArchievedNews));
+	}
+
+	@GetMapping("/all/draft")
+	public ResponseEntity<?> getLastOneMonthDraftNewsData(Principal principal) {
+		List<NewsResponseDTO> lastOneMonthDraftedNews = newsService.getLastOneMonthDraftNewsData(principal);
+
+		if (lastOneMonthDraftedNews.isEmpty()) {
+			return ResponseEntity.ok(new ApiResponse<>(
+					"நீங்கள் எந்த செய்தியும் வரைவு நிலையில் வைக்கவில்லை / It looks like you haven’t Drafted any posts.",
+					null));
+		}
+
+		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthDraftedNews));
 	}
 
 //	@PutMapping("/update-news/{id}")
@@ -94,9 +143,8 @@ public class NewsDataController {
 
 	// 👍 Like increment
 	@PatchMapping("/{id}/like")
-	public ResponseEntity<NewsEngagedStatus> toggleLike(
-	        @PathVariable Long id, Principal principal) {
-	    return ResponseEntity.ok(newsService.toggleLike(id, principal.getName()));
+	public ResponseEntity<NewsEngagedStatus> toggleLike(@PathVariable Long id, Principal principal) {
+		return ResponseEntity.ok(newsService.toggleLike(id, principal.getName()));
 	}
 
 	// 👎 Unlike increment
@@ -113,38 +161,38 @@ public class NewsDataController {
 
 	@PatchMapping("/post/{id}/archived")
 	public ResponseEntity<String> postMoveToArchive(@PathVariable Long id, Principal principal) {
-	    boolean isArchived = newsService.newsPostMoveToArchive(id, principal);
+		boolean isArchived = newsService.newsPostMoveToArchive(id, principal);
 
-	    if (isArchived) {
-	        return ResponseEntity.ok("செய்தி வெற்றிகரமாக காப்பகத்திற்கு(Archived) மாற்றப்பட்டது.");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                .body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
-	    }
+		if (isArchived) {
+			return ResponseEntity.ok("செய்தி வெற்றிகரமாக காப்பகத்திற்கு(Archived) மாற்றப்பட்டது.");
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
+		}
 	}
-	
+
 	@PatchMapping("/post/{id}/draft")
 	public ResponseEntity<String> postMoveToDraft(@PathVariable Long id, Principal principal) {
-	    boolean isDrafted = newsService.newsPostMoveToDraft(id, principal);
+		boolean isDrafted = newsService.newsPostMoveToDraft(id, principal);
 
-	    if (isDrafted) {
-	    	return ResponseEntity.ok("செய்தி வெற்றிகரமாக வரைவு (Draft) நிலைக்கு மாற்றப்பட்டது.");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                .body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
-	    }
+		if (isDrafted) {
+			return ResponseEntity.ok("செய்தி வெற்றிகரமாக வரைவு (Draft) நிலைக்கு மாற்றப்பட்டது.");
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
+		}
 	}
-	
+
 	@PatchMapping("/post/{id}/published")
 	public ResponseEntity<String> postMoveToPublished(@PathVariable Long id, Principal principal) {
-	    boolean isPublished = newsService.newsPostMoveToPublished(id, principal);
+		boolean isPublished = newsService.newsPostMoveToPublished(id, principal);
 
-	    if (isPublished) {
-	    	return ResponseEntity.ok("செய்தி வெற்றிகரமாக வெளியிடப்பட்ட (Published) நிலைக்கு மாற்றப்பட்டது.");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                .body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
-	    }
+		if (isPublished) {
+			return ResponseEntity.ok("செய்தி வெற்றிகரமாக வெளியிடப்பட்ட (Published) நிலைக்கு மாற்றப்பட்டது.");
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
+		}
 	}
-	
+
 }
