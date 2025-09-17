@@ -24,21 +24,22 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .cors(withDefaults())   // ✅ enable CORS support
-                .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/auth/**", "/news/home", "/news/upload", "/images/**").permitAll()
-                                .requestMatchers("/news/**", "/user/**").authenticated()
-                                .anyRequest().denyAll()
-                )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+        .cors(withDefaults())   // ✅ enable CORS support
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/**","/news/home", "/images/**").permitAll()   // login & register open
+                .requestMatchers("/news/**","/user/**").authenticated() // news protected
+                .anyRequest().denyAll()
+            )
+            // ✅ Correctly placed session management for JWT (stateless)
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            );
 
+        // ✅ Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     PasswordEncoder passwordEncoder() {
