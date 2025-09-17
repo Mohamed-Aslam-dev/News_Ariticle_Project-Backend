@@ -13,13 +13,23 @@ public class JwtUtil {
     private final String SECRET_KEY = "ThisIsASecretKeyForJWTGenerationInIlayangudiNewsPostingApp1234"; // at least 32 bytes
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
+    private final long ACCESS_EXPIRATION = 1000 * 60 * 15; // 15 min
+    private final long REFRESH_EXPIRATION = 1000L * 60 * 60 * 24 * 30; // 30 days
 
-    public String generateToken(String username) {
+    public String generateAccessToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

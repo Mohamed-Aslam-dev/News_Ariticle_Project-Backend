@@ -23,12 +23,6 @@ public interface NewsDataServiceRepository {
 
 	public NewsEngagedStatus addView(Long newsId, String username);
 
-	public List<NewsResponseDTO> getLastOneMonthPublishedNewsData(Principal principal);
-
-	public List<NewsResponseDTO> getLastOneMonthDraftNewsData(Principal principal);
-
-	public List<NewsResponseDTO> getLastOneMonthArchievedNewsData(Principal principal);
-
 	public boolean newsPostMoveToArchive(Long id, Principal principal);
 
 	public boolean newsPostMoveToDraft(Long id, Principal principal);

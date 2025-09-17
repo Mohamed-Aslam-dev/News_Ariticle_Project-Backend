@@ -83,44 +83,6 @@ public class NewsDataController {
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthNews));
 	}
 
-	@GetMapping("/all/published")
-	public ResponseEntity<?> getLastOneMonthPublishedNewsData(Principal principal) {
-		List<NewsResponseDTO> lastOneMonthPublishedNews = newsService.getLastOneMonthPublishedNewsData(principal);
-
-		if (lastOneMonthPublishedNews.isEmpty()) {
-			return ResponseEntity.ok(new ApiResponse<>(
-					"நீங்கள் எந்த செய்தியும் வெளியிடப்படவில்லை / It looks like you haven’t published any posts.",
-					null));
-		}
-
-		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthPublishedNews));
-	}
-
-	@GetMapping("/all/archived")
-	public ResponseEntity<?> getLastOneMonthArchivedNewsData(Principal principal) {
-		List<NewsResponseDTO> lastOneMonthArchievedNews = newsService.getLastOneMonthArchievedNewsData(principal);
-
-		if (lastOneMonthArchievedNews.isEmpty()) {
-			return ResponseEntity.ok(new ApiResponse<>(
-					"நீங்கள் எந்த செய்தியும் காப்பக நிலையில் வைக்கவில்லை / It looks like you haven’t Archived any posts.",
-					null));
-		}
-
-		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthArchievedNews));
-	}
-
-	@GetMapping("/all/draft")
-	public ResponseEntity<?> getLastOneMonthDraftNewsData(Principal principal) {
-		List<NewsResponseDTO> lastOneMonthDraftedNews = newsService.getLastOneMonthDraftNewsData(principal);
-
-		if (lastOneMonthDraftedNews.isEmpty()) {
-			return ResponseEntity.ok(new ApiResponse<>(
-					"நீங்கள் எந்த செய்தியும் வரைவு நிலையில் வைக்கவில்லை / It looks like you haven’t Drafted any posts.",
-					null));
-		}
-
-		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthDraftedNews));
-	}
 
 //	@PutMapping("/update-news/{id}")
 //	public ResponseEntity<?> updateNewsData(@PathVariable Long id,

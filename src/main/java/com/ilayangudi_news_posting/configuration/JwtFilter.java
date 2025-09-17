@@ -28,7 +28,14 @@ public class JwtFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		String path = request.getRequestURI();
-		if (path.startsWith("/auth/") || path.equals("/news/home") || path.startsWith("/images/") ) {
+		if (path.equals("/auth/new-user") 
+		        || path.equals("/auth/send-otp") 
+		        || path.equals("/auth/verify-otp") 
+		        || path.equals("/auth/user-login") 
+		        || path.equals("/auth/refresh") 
+		        || path.startsWith("/auth/forget-password") 
+		        || path.equals("/news/home") 
+		        || path.startsWith("/images/")) {
 		    filterChain.doFilter(request, response); // skip JWT check
 		    return;
 		}
@@ -63,11 +70,11 @@ public class JwtFilter extends OncePerRequestFilter {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			response.setContentType("application/json;charset=UTF-8");
 			response.getWriter().write(
-					"{\"message\":\"நீங்கள் யார் என்று என்னால் அறிய முடியவில்லை, தயவுசெய்து மீண்டும் உள்நுழையவும்\"}");
+					"{\"message\":\"நீங்கள் யார் என்று என்னால் அறிய முடியவில்லை, தயவுசெய்து மீண்டும் உள்நுழையவும்/Please Login\"}");
 		} catch (RuntimeException e) {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			response.setContentType("application/json;charset=UTF-8");
-			response.getWriter().write("{\"message\":\"Token இல்லை அல்லது தவறான Token\"}");
+			response.getWriter().write("{\"message\":\"Token இல்லை அல்லது தவறான Token ஆதலால் உள்நுழைவு பக்கம்(Login page) வழியாக மீண்டும் உள்நுழையவும்\"}");
 		}
 	}
 

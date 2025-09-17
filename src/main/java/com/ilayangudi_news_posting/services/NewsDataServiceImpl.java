@@ -169,33 +169,6 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 		return status;
 	}
 
-	@Override
-	public List<NewsResponseDTO> getLastOneMonthPublishedNewsData(Principal principal) {
-		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-		List<NewsData> lastOneMonthPublishedNews = newsDataRepository.findUserPublishedNewsLastMonth(oneMonthAgo,
-				principal.getName());
-
-		return getNewsDatas(lastOneMonthPublishedNews);
-	}
-
-	@Override
-	public List<NewsResponseDTO> getLastOneMonthArchievedNewsData(Principal principal) {
-		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-		List<NewsData> lastOneMonthArchivedNews = newsDataRepository.findUserArchievedNewsLastMonth(oneMonthAgo,
-				principal.getName());
-
-		return getNewsDatas(lastOneMonthArchivedNews);
-	}
-
-	@Override
-	public List<NewsResponseDTO> getLastOneMonthDraftNewsData(Principal principal) {
-		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-		List<NewsData> lastOneMonthDraftNews = newsDataRepository.findUserDraftNewsLastMonth(oneMonthAgo,
-				principal.getName());
-
-		return getNewsDatas(lastOneMonthDraftNews);
-	}
-
 	public boolean newsPostMoveToArchive(Long id, Principal principal) {
 		Optional<NewsData> optionalNews = newsDataRepository.findById(id);
 
