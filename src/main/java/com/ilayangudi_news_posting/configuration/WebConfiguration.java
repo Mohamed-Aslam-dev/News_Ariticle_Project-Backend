@@ -1,5 +1,6 @@
 package com.ilayangudi_news_posting.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -8,11 +9,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
 
+	@Value("${android.mobile.api}")
+	private static String MOBILE_API;
+	
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 
 		registry.addMapping("/**")
-				.allowedOriginPatterns("http://localhost:5173")
+				.allowedOriginPatterns("http://localhost:5173", MOBILE_API)
 				.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
 				.allowedHeaders("*")
 				.allowCredentials(true);

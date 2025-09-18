@@ -23,7 +23,7 @@ public class IpRateLimitFilter implements Filter{
 	private Bucket createNewBucket() {
 	    Bandwidth limit = Bandwidth.builder()
 	        .capacity(5)  // 5 login attempts
-	        .refillIntervally(5, Duration.ofMinutes(1)) // every 1 min reset
+	        .refillIntervally(10, Duration.ofMinutes(1)) // every 1 min reset
 	        .build();
 	    return Bucket.builder().addLimit(limit).build();
 	}
