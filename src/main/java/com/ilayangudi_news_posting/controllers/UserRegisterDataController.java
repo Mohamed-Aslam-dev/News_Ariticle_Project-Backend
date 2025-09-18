@@ -1,6 +1,5 @@
 package com.ilayangudi_news_posting.controllers;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,18 +7,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilayangudi_news_posting.configuration.AuthService;
+import com.ilayangudi_news_posting.configuration.CaptchaService;
 import com.ilayangudi_news_posting.configuration.JwtUtil;
+import com.ilayangudi_news_posting.configuration.LoginAttemptService;
 import com.ilayangudi_news_posting.message_services.OtpGenerateService;
 import com.ilayangudi_news_posting.request_dto.EmailVerifiedRequestDTO;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
@@ -28,7 +29,6 @@ import com.ilayangudi_news_posting.request_dto.LoginRequestDTO;
 import com.ilayangudi_news_posting.request_dto.OtpVerificationRequestDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -58,6 +58,12 @@ public class UserRegisterDataController {
 	@Autowired
 	private OtpGenerateService otpService;
 
+	@Autowired
+	private LoginAttemptService loginAttemptService;
+	
+	@Autowired
+	private CaptchaService captchaService;
+
 	@PostMapping("/new-user")
 	public ResponseEntity<String> addNewUser(@RequestPart("userRegisterData") String userDataJson,
 			@RequestPart(value = "profilePic", required = false) MultipartFile profilePic) throws Exception {
@@ -66,7 +72,9 @@ public class UserRegisterDataController {
 		UserRegisterDTO userRegisterData = mapper.readValue(userDataJson, UserRegisterDTO.class);
 
 		if (!userRegisterData.isEmailVerified()) {
-			return new ResponseEntity<>("மின்னஞ்சல் சரிபார்ப்பு(verify) செய்யப்படவில்லை மின்னஞ்சல் கட்டத்தில்(box) உள்ள verify பொத்தானை அழுத்தி சரிபார்ப்பு செய்யவும்", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(
+					"மின்னஞ்சல் சரிபார்ப்பு(verify) செய்யப்படவில்லை மின்னஞ்சல் கட்டத்தில்(box) உள்ள verify பொத்தானை அழுத்தி சரிபார்ப்பு செய்யவும்",
+					HttpStatus.BAD_REQUEST);
 		}
 
 		// Manual validation
@@ -101,37 +109,49 @@ public class UserRegisterDataController {
 			return new ResponseEntity<>("OTP தவறானது அல்லது காலாவதியானது.", HttpStatus.BAD_REQUEST);
 		}
 
-		return new ResponseEntity<>("மின்னஞ்சல்(Email) சரிபார்ப்பு(verify) வெற்றிகரமாக முடிந்தது.", HttpStatus.ACCEPTED);
+		return new ResponseEntity<>("மின்னஞ்சல்(Email) சரிபார்ப்பு(verify) வெற்றிகரமாக முடிந்தது.",
+				HttpStatus.ACCEPTED);
 	}
 
 	@PostMapping("/user-login")
 	public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse resp) {
-	    try {
-	        authManager.authenticate(
-	            new UsernamePasswordAuthenticationToken(request.getEmailOrPhone(), request.getPassword()));
-
-	        UserDetails userDetails = authService.loadUserByUsername(request.getEmailOrPhone());
-
-	        String accessToken = jwtUtil.generateAccessToken(userDetails.getUsername());
-	        String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername());
-
-	        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-	                .httpOnly(true)
-	                .secure(false) // in prod: true with HTTPS
-	                .path("/")
-	                .sameSite("Lax")
-	                .maxAge(60 * 60 * 24 * 30) // 30 days
-	                .build();
-
-	        resp.addHeader("Set-Cookie", refreshCookie.toString());
-
-	        return ResponseEntity.ok(Map.of("accessToken", accessToken));
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                .body("உள்நுழைவதில் சிக்கல், உங்கள் மின்னஞ்சல்/மொபைல் எண் அல்லது கடவுச்சொல்லை(Password) சரிபார்க்கவும்");
+		String key = request.getEmailOrPhone();
+		if (loginAttemptService.isBlocked(key)) {
+			return ResponseEntity.status(429).body("Too many failed attempts. Try again later.");
+		}
+		
+		// CAPTCHA required for attempts 4 & 5
+	    if (loginAttemptService.shouldShowCaptcha(key) && !captchaService.validate(request.getCaptchaResponse())) {
+	        return ResponseEntity.status(400).body("CAPTCHA verification failed");
 	    }
-	}
+		
+		try {
+			authManager.authenticate(new UsernamePasswordAuthenticationToken(key, request.getPassword()));
 
+			// success -> reset attempts
+			loginAttemptService.loginSucceeded(key);
+
+			UserDetails userDetails = authService.loadUserByUsername(request.getEmailOrPhone());
+
+			String accessToken = jwtUtil.generateAccessToken(userDetails.getUsername());
+			String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername());
+
+			ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true)
+					.secure(false) // in prod: true with HTTPS
+					.path("/").sameSite("Lax").maxAge(60 * 60 * 24 * 30) // 30 days
+					.build();
+
+			resp.addHeader("Set-Cookie", refreshCookie.toString());
+
+			return ResponseEntity.ok(Map.of("accessToken", accessToken));
+		} catch (BadCredentialsException e) {
+			loginAttemptService.loginFailed(key);
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+					"உள்நுழைவதில் சிக்கல், உங்கள் மின்னஞ்சல்/மொபைல் எண் அல்லது கடவுச்சொல்லை(Password) சரிபார்க்கவும்");
+		}
+	}
 
 	@PostMapping("/forget-password/request")
 	public ResponseEntity<String> forgetPasswordRequest(
@@ -158,52 +178,46 @@ public class UserRegisterDataController {
 			return ResponseEntity.status(400).body("தவறான அல்லது காலாவதியான OTP");
 		}
 	}
-	
+
 	@PostMapping("/refresh")
 	public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-	    Cookie[] cookies = request.getCookies();
-	    String refreshToken = null;
-	    if (cookies != null) {
-	        for (Cookie cookie : cookies) {
-	            if (cookie.getName().equals("refreshToken")) {
-	                refreshToken = cookie.getValue();
-	            }
-	        }
-	    }
+		Cookie[] cookies = request.getCookies();
+		String refreshToken = null;
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				if (cookie.getName().equals("refreshToken")) {
+					refreshToken = cookie.getValue();
+				}
+			}
+		}
 
-	    if (refreshToken == null) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No refresh token");
-	    }
+		if (refreshToken == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No refresh token");
+		}
 
-	    String username;
-	    try {
-	        username = jwtUtil.extractUsername(refreshToken);
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
-	    }
+		String username;
+		try {
+			username = jwtUtil.extractUsername(refreshToken);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+		}
 
-	    if (!jwtUtil.validateToken(refreshToken, username)) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
-	    }
+		if (!jwtUtil.validateToken(refreshToken, username)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
+		}
 
-	    String newAccessToken = jwtUtil.generateAccessToken(username);
+		String newAccessToken = jwtUtil.generateAccessToken(username);
 
-	    return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+		return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
 	}
 
-	
 	@PostMapping("/logout")
 	public ResponseEntity<?> logout(HttpServletResponse resp) {
-	    ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-	            .httpOnly(true)
-	            .secure(true)
-	            .path("/")
-	            .sameSite("Strict")
-	            .maxAge(0) // expire immediately
-	            .build();
-	    resp.addHeader("Set-Cookie", deleteCookie.toString());
-	    return ResponseEntity.ok("Logged out successfully");
+		ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "").httpOnly(true).secure(true).path("/")
+				.sameSite("Strict").maxAge(0) // expire immediately
+				.build();
+		resp.addHeader("Set-Cookie", deleteCookie.toString());
+		return ResponseEntity.ok("Logged out successfully");
 	}
-
 
 }
