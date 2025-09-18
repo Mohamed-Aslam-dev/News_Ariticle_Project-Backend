@@ -19,24 +19,20 @@ public class NewsEngagedStatus {
 	private Long likes = 0L;
 	private Long unLikes = 0L;
 	private Long reports = 0L;
-	
-	private String username;
-	
+
 	// Foreign key to NewsData
 	@OneToOne
 	@JoinColumn(name = "news_id", nullable = false, unique = true)
 	@JsonBackReference
 	private NewsData news;
 
-	public NewsEngagedStatus(Long id, Long views, Long likes, Long unLikes, Long reports, String username,
-			NewsData news) {
+	public NewsEngagedStatus(Long id, Long views, Long likes, Long unLikes, Long reports, NewsData news) {
 		super();
 		this.id = id;
 		this.views = views;
 		this.likes = likes;
 		this.unLikes = unLikes;
 		this.reports = reports;
-		this.username = username;
 		this.news = news;
 	}
 
@@ -83,14 +79,6 @@ public class NewsEngagedStatus {
 	public void setReports(Long reports) {
 		this.reports = reports;
 	}
-	
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
 
 	public NewsData getNews() {
 		return news;
@@ -103,10 +91,7 @@ public class NewsEngagedStatus {
 	@Override
 	public String toString() {
 		return "NewsEngagedStatus [id=" + id + ", views=" + views + ", likes=" + likes + ", unLikes=" + unLikes
-				+ ", reports=" + reports + ", username=" + username + ", news=" + news + "]";
+				+ ", reports=" + reports + ", news=" + news + "]";
 	}
-	
-
-	
 
 }

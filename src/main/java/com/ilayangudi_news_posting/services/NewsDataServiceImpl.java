@@ -5,7 +5,6 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -94,80 +93,102 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
 	@Transactional
 	public NewsEngagedStatus toggleLike(Long newsId, String username) {
-		NewsData news = newsDataRepository.findById(newsId).orElseThrow(() -> new RuntimeException("News not found"));
+	    NewsData news = newsDataRepository.findById(newsId)
+	            .orElseThrow(() -> new RuntimeException("News not found"));
 
-		NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
-				.orElse(new NewsUserEngagement(null, username, false, false, false, news));
+	    NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
+	            .orElseGet(() -> new NewsUserEngagement(null, username, false, false, false, news));
 
-		NewsEngagedStatus status = news.getNewsEngagedStatus();
-		if (status == null) {
-			status = new NewsEngagedStatus();
-			status.setNews(news);
-		}
+	    NewsEngagedStatus status = newsStatusRepository.findByNews(news)
+	            .orElseGet(() -> {
+	                NewsEngagedStatus s = new NewsEngagedStatus();
+	                s.setNews(news);
+	                s.setLikes(0L);
+	                s.setUnLikes(0L);
+	                s.setReports(0L);
+	                s.setViews(0L);
+	                return s;
+	            });
 
-		if (engagement.isLiked()) {
-			engagement.setLiked(false);
-			status.setLikes(status.getLikes() - 1);
-		} else {
-			engagement.setLiked(true);
-			status.setLikes(status.getLikes() + 1);
-			addView(newsId, username);
-		}
+	    // Toggle like
+	    if (engagement.isLiked()) {
+	        engagement.setLiked(false);
+	        status.setLikes(Math.max(status.getLikes() - 1, 0));
+	    } else {
+	        engagement.setLiked(true);
+	        engagement.setDisliked(false); // cannot dislike if liked
+	        status.setLikes(status.getLikes() + 1);
+	    }
 
-		newsUserEngagementRepo.save(engagement);
-		newsStatusRepository.save(status);
-		return status;
+	    newsUserEngagementRepo.save(engagement);
+	    newsStatusRepository.save(status);
+	    return status;
 	}
 
 	@Transactional
 	public NewsEngagedStatus toggleUnLike(Long newsId, String username) {
-		NewsData news = newsDataRepository.findById(newsId).orElseThrow(() -> new RuntimeException("News not found"));
+	    NewsData news = newsDataRepository.findById(newsId)
+	            .orElseThrow(() -> new RuntimeException("News not found"));
 
-		NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
-				.orElse(new NewsUserEngagement(null, username, false, false, false, news));
+	    NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
+	            .orElseGet(() -> new NewsUserEngagement(null, username, false, false, false, news));
 
-		NewsEngagedStatus status = news.getNewsEngagedStatus();
-		if (status == null) {
-			status = new NewsEngagedStatus();
-			status.setNews(news);
-		}
+	    NewsEngagedStatus status = newsStatusRepository.findByNews(news)
+	            .orElseGet(() -> {
+	                NewsEngagedStatus s = new NewsEngagedStatus();
+	                s.setNews(news);
+	                s.setLikes(0L);
+	                s.setUnLikes(0L);
+	                s.setReports(0L);
+	                s.setViews(0L);
+	                return s;
+	            });
 
-		if (engagement.isDisliked()) {
-			engagement.setDisliked(false);
-			status.setUnLikes(status.getUnLikes() - 1);
-		} else {
-			engagement.setDisliked(true);
-			status.setUnLikes(status.getUnLikes() + 1);
-			addView(newsId, username);
-		}
+	    // Toggle unlike
+	    if (engagement.isDisliked()) {
+	        engagement.setDisliked(false);
+	        status.setUnLikes(Math.max(status.getUnLikes() - 1, 0));
+	    } else {
+	        engagement.setDisliked(true);
+	        engagement.setLiked(false); // cannot like if disliked
+	        status.setUnLikes(status.getUnLikes() + 1);
+	    }
 
-		newsUserEngagementRepo.save(engagement);
-		newsStatusRepository.save(status);
-		return status;
+	    newsUserEngagementRepo.save(engagement);
+	    newsStatusRepository.save(status);
+	    return status;
 	}
 
 	@Transactional
 	public NewsEngagedStatus addView(Long newsId, String username) {
-		NewsData news = newsDataRepository.findById(newsId).orElseThrow(() -> new RuntimeException("News not found"));
+	    NewsData news = newsDataRepository.findById(newsId)
+	            .orElseThrow(() -> new RuntimeException("News not found"));
 
-		NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
-				.orElse(new NewsUserEngagement(null, username, false, false, false, news));
+	    NewsUserEngagement engagement = newsUserEngagementRepo.findByNewsAndUsername(news, username)
+	            .orElseGet(() -> new NewsUserEngagement(null, username, false, false, false, news));
 
-		NewsEngagedStatus status = news.getNewsEngagedStatus();
-		if (status == null) {
-			status = new NewsEngagedStatus();
-			status.setNews(news);
-		}
+	    NewsEngagedStatus status = newsStatusRepository.findByNews(news)
+	            .orElseGet(() -> {
+	                NewsEngagedStatus s = new NewsEngagedStatus();
+	                s.setNews(news);
+	                s.setLikes(0L);
+	                s.setUnLikes(0L);
+	                s.setReports(0L);
+	                s.setViews(0L);
+	                return s;
+	            });
 
-		if (!engagement.isViewed()) {
-			engagement.setViewed(true);
-			status.setViews(status.getViews() + 1);
-		}
+	    // Add view only once per user
+	    if (!engagement.isViewed()) {
+	        engagement.setViewed(true);
+	        status.setViews(status.getViews() + 1);
+	    }
 
-		newsUserEngagementRepo.save(engagement);
-		newsStatusRepository.save(status);
-		return status;
+	    newsUserEngagementRepo.save(engagement);
+	    newsStatusRepository.save(status);
+	    return status;
 	}
+
 
 	public boolean newsPostMoveToArchive(Long id, Principal principal) {
 		Optional<NewsData> optionalNews = newsDataRepository.findById(id);

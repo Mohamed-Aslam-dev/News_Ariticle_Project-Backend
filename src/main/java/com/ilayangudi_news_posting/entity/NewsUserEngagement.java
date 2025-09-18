@@ -17,12 +17,12 @@ public class NewsUserEngagement {
 	private Long id;
 
 	private String username;
-	private boolean liked = false;
-	private boolean disliked = false;
-	private boolean viewed = false;
+	private boolean liked;
+	private boolean disliked;
+	private boolean viewed;
 
 	@ManyToOne
-	@JoinColumn(name = "news_id")
+	@JoinColumn(name = "news_id", nullable = false)
 	@JsonBackReference
 	private NewsData news;
 
@@ -30,7 +30,8 @@ public class NewsUserEngagement {
 
 	}
 
-	public NewsUserEngagement(Long id, String username, boolean liked, boolean disliked, boolean viewed, NewsData news) {
+	public NewsUserEngagement(Long id, String username, boolean liked, boolean disliked, boolean viewed,
+			NewsData news) {
 
 		this.id = id;
 		this.username = username;
