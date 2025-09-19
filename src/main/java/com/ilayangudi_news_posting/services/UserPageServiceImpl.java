@@ -25,7 +25,7 @@ public class UserPageServiceImpl implements UserPageServiceRepository {
 
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
-	
+
 	@Autowired
 	private NewsDataRepository newsDataRepository;
 
@@ -51,28 +51,27 @@ public class UserPageServiceImpl implements UserPageServiceRepository {
 		}
 
 	}
-	
+
 	@Override
 	public boolean deleteUserProfilePicture(Principal principal) {
-		
-		String userEmail = principal.getName();
-	    UserRegisterData user = userRegisterDataRepo
-	        .findByEmailId(userEmail)
-	        .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
-	    if (user.getProfilePicUrl() != null) {
-	    	
-	    	// ✅ Delete from Supabase bucket
-	        newsFileStore.deleteFileFromSupabase(user.getProfilePicUrl());
-	    	
-	        user.setProfilePicUrl(null);
-	        userRegisterDataRepo.save(user);
-	        return true; // profile deleted
-	    }
-	    return false; // already no profile pic
+		String userEmail = principal.getName();
+		UserRegisterData user = userRegisterDataRepo.findByEmailId(userEmail)
+				.orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+		if (user.getProfilePicUrl() != null) {
+
+			// ✅ Delete from Supabase bucket
+			newsFileStore.deleteFileFromSupabase(user.getProfilePicUrl());
+
+			user.setProfilePicUrl(null);
+			userRegisterDataRepo.save(user);
+			return true; // profile deleted
+		}
+		return false; // already no profile pic
 
 	}
-	
+
 	@Override
 	public List<NewsResponseDTO> getLastOneMonthPublishedNewsData(Principal principal) {
 		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
@@ -99,7 +98,7 @@ public class UserPageServiceImpl implements UserPageServiceRepository {
 
 		return getNewsDatas(lastOneMonthDraftNews);
 	}
-	
+
 	private List<NewsResponseDTO> getNewsDatas(List<NewsData> newsList) {
 
 		return newsList.stream().map(news -> {
@@ -111,11 +110,10 @@ public class UserPageServiceImpl implements UserPageServiceRepository {
 			// ✅ Convert String -> List<String>
 			List<String> imageUrls;
 			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-				// already List<String> irukku
-				imageUrls = news.getImageOrVideoUrl();
+				// original relative paths
+				imageUrls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
 			} else {
 				imageUrls = null;
-//	            throw new RuntimeException("Image or Video not found for this news");
 			}
 			dto.setImageOrVideoUrl(imageUrls);
 
