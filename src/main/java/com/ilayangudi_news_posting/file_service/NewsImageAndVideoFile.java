@@ -89,5 +89,21 @@ public class NewsImageAndVideoFile {
             .block();
     }
     
+    public List<String> generateSignedUrls(List<String> filePaths, int expiryInSeconds) {
+        return filePaths.stream()
+                .map(path -> {
+                    String url = supabaseUrl + "/storage/v1/object/sign/" + bucketName + "/" + path;
+                    return webClient.post()
+                            .uri(url)
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
+                            .bodyValue("{\"expiresIn\": " + expiryInSeconds + "}")
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .block();
+                })
+                .toList();
+    }
+
+    
 }
 

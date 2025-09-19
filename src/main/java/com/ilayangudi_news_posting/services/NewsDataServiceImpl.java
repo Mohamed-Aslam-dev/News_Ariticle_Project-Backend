@@ -263,11 +263,10 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 			// ✅ Convert String -> List<String>
 			List<String> imageUrls;
 			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-				// already List<String> irukku
-				imageUrls = news.getImageOrVideoUrl();
+			    // original relative paths
+			    imageUrls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
 			} else {
-				imageUrls = null;
-//	            throw new RuntimeException("Image or Video not found for this news");
+			    imageUrls = null;
 			}
 			dto.setImageOrVideoUrl(imageUrls);
 
