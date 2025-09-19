@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfiguration implements WebMvcConfigurer {
 
 	@Value("${android.mobile.api}")
-	private static String MOBILE_API;
+	private String MOBILE_API;
 	
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
