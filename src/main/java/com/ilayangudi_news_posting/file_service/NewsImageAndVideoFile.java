@@ -2,11 +2,17 @@ package com.ilayangudi_news_posting.file_service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -14,6 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import reactor.core.publisher.Flux;
 
@@ -56,7 +64,7 @@ public class NewsImageAndVideoFile {
 
             String url = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + filePath;
 
-            webClient.post()
+            webClient.put()
                     .uri(url)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
                     .header(HttpHeaders.CONTENT_TYPE, "application/octet-stream")
@@ -89,20 +97,41 @@ public class NewsImageAndVideoFile {
             .block();
     }
     
-    public List<String> generateSignedUrls(List<String> filePaths, int expiryInSeconds) {
-        return filePaths.stream()
-                .map(path -> {
-                	String url = supabaseUrl + "/storage/v1/object/sign/" + bucketName + "/" + path;
-                    return webClient.post()
-                            .uri(url)
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
-                            .bodyValue("{\"expiresIn\": " + expiryInSeconds + "}")
-                            .retrieve()
-                            .bodyToMono(String.class)
-                            .block();
-                })
-                .toList();
+    private String generateSignedUrl(String publicUrl, int expiryInSeconds) {
+        try {
+            String relativePath = publicUrl.replace(
+                supabaseUrl + "/storage/v1/object/public/" + bucketName + "/", ""
+            );
+
+            // encode only spaces
+            String safePath = relativePath.replace(" ", "%20");
+
+            String url = supabaseUrl + "/storage/v1/object/sign/" + bucketName + "/" + safePath;
+
+            var requestBody = Map.of("expiresIn", expiryInSeconds);
+
+            String signedUrlJson = webClient.post()
+                    .uri(url)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            return new ObjectMapper().readTree(signedUrlJson).get("signedURL").asText();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating signed URL", e);
+        }
     }
+
+
+    public List<String> generateSignedUrls(List<String> fileUrls, int expiryInSeconds) {
+        return fileUrls.stream()
+                .map(url -> generateSignedUrl(url, expiryInSeconds))
+                .collect(Collectors.toList());
+    }
+
 
     
 }
