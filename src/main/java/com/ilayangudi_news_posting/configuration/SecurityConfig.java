@@ -26,7 +26,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
         .cors(withDefaults())   // ✅ enable CORS support
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/new-user", "/auth/send-otp", "/auth/verify-otp", "/auth/user-login", "/auth/refresh", "/auth/forget-password/**","/news/home", "/images/**").permitAll()   // login & register open
+                .requestMatchers("/auth/new-user", "/auth/send-otp", "/auth/verify-otp", "/auth/user-login", "/auth/refresh", "/auth/forget-password/**","/news/home", "/images/**", "/actuator/**").permitAll()   // login & register open
                 .requestMatchers("/news/**","/user/**","/auth/logout").authenticated() // news protected
                 .anyRequest().denyAll()
             )

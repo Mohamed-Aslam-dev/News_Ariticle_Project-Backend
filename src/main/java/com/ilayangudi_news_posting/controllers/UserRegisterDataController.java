@@ -35,7 +35,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 public class UserRegisterDataController {
@@ -68,10 +70,15 @@ public class UserRegisterDataController {
 	public ResponseEntity<String> addNewUser(@RequestPart("userRegisterData") String userDataJson,
 			@RequestPart(value = "profilePic", required = false) MultipartFile profilePic) throws Exception {
 
+		log.info("➡️ New user registration request received. Data={}", userDataJson);
+		
 		ObjectMapper mapper = new ObjectMapper();
 		UserRegisterDTO userRegisterData = mapper.readValue(userDataJson, UserRegisterDTO.class);
 
 		if (!userRegisterData.isEmailVerified()) {
+			
+			log.warn("❌ Email not verified for user: {}", userRegisterData.getEmailId());
+			
 			return new ResponseEntity<>(
 					"மின்னஞ்சல் சரிபார்ப்பு(verify) செய்யப்படவில்லை மின்னஞ்சல் கட்டத்தில்(box) உள்ள verify பொத்தானை அழுத்தி சரிபார்ப்பு செய்யவும்",
 					HttpStatus.BAD_REQUEST);
@@ -115,21 +122,31 @@ public class UserRegisterDataController {
 
 	@PostMapping("/user-login")
 	public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse resp) {
+		
 		String key = request.getEmailOrPhone();
+		
+		log.info("➡️ Login attempt for key={}", key);
+		
 		if (loginAttemptService.isBlocked(key)) {
+			log.warn("🚫 Login blocked due to too many attempts. key={}", key);
 			return ResponseEntity.status(429).body("Too many failed attempts. Try again later.");
 		}
 		
 		// CAPTCHA required for attempts 4 & 5
 	    if (loginAttemptService.shouldShowCaptcha(key) && !captchaService.validate(request.getCaptchaResponse())) {
+	    	log.info("🔒 CAPTCHA required for login. key={}", key);
+	    	log.error("🔒 CAPTCHA required for login. key={} | error={}", key, request.getCaptchaResponse());
 	        return ResponseEntity.status(400).body("CAPTCHA verification failed");
 	    }
+	    log.info("✅ CAPTCHA passed. key={}", key);
 		
 		try {
 			authManager.authenticate(new UsernamePasswordAuthenticationToken(key, request.getPassword()));
 
 			// success -> reset attempts
 			loginAttemptService.loginSucceeded(key);
+			
+			log.info("✅ Login successful. key={}", key);
 
 			UserDetails userDetails = authService.loadUserByUsername(request.getEmailOrPhone());
 
@@ -146,8 +163,10 @@ public class UserRegisterDataController {
 			return ResponseEntity.ok(Map.of("accessToken", accessToken));
 		} catch (BadCredentialsException e) {
 			loginAttemptService.loginFailed(key);
+			log.error("❌ Invalid credentials. key={} | error={}", key, e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
 		} catch (Exception e) {
+			log.error("⚠️ Unexpected error during login. key={} | error={}", key, e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
 					"உள்நுழைவதில் சிக்கல், உங்கள் மின்னஞ்சல்/மொபைல் எண் அல்லது கடவுச்சொல்லை(Password) சரிபார்க்கவும்");
 		}

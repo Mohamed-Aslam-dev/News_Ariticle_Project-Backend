@@ -35,7 +35,8 @@ public class JwtFilter extends OncePerRequestFilter {
 		        || path.equals("/auth/refresh") 
 		        || path.startsWith("/auth/forget-password") 
 		        || path.equals("/news/home") 
-		        || path.startsWith("/images/")) {
+		        || path.startsWith("/images/")
+		        || path.startsWith("/actuator/")) {
 		    filterChain.doFilter(request, response); // skip JWT check
 		    return;
 		}

@@ -18,11 +18,16 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
+
+@Slf4j
 @Service
 public class NewsImageAndVideoFile {
 
+	
 	private final WebClient webClient;
 
 	@Value("${supabase.url}")
@@ -47,12 +52,16 @@ public class NewsImageAndVideoFile {
 	public String getNewsImageAndVideoFilepath(MultipartFile file, String folder) throws IOException {
 		try {
 			String originalFileName = file.getOriginalFilename();
+			 log.info("Uploading file: {}", originalFileName);
+			 
 			String extension = (originalFileName != null && originalFileName.contains("."))
 					? originalFileName.substring(originalFileName.lastIndexOf("."))
 					: "";
 
 			String uniqueFileName = UUID.randomUUID().toString() + "_"
 					+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + extension;
+			
+			log.debug("Generated unique file name: {}", uniqueFileName);
 
 			String filePath = folder + "/" + uniqueFileName;
 
@@ -63,17 +72,21 @@ public class NewsImageAndVideoFile {
 					.bodyValue(new InputStreamResource(file.getInputStream())).retrieve().bodyToMono(String.class)
 					.block();
 
+			log.info("File uploaded successfully: {}", filePath);
+			
 			return supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + filePath;
 
 		} catch (IOException e) {
+			log.error("Error uploading file: {}", file.getOriginalFilename(), e);
 			throw new RuntimeException("Error uploading file: " + file.getOriginalFilename(), e);
 		}
 	}
 
 	public void deleteFileFromSupabase(String fileUrl) {
+		
 		if (fileUrl == null || fileUrl.isEmpty())
 			return;
-
+		
 		// fileUrl la irundhu relative path extract pannanum
 		// ex:
 		// https://xyz.supabase.co/storage/v1/object/public/mybucket/userProfilePics/abc.jpg
@@ -83,10 +96,16 @@ public class NewsImageAndVideoFile {
 
 		webClient.delete().uri(url).header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey).retrieve()
 				.bodyToMono(Void.class).block();
+		
+		log.info("Deleting file from Supabase: {}", fileUrl);
+		
 	}
 
 	// Generate signed URL for single file
 	private String generateSignedUrl(String publicUrl, int expiryInSeconds) {
+		
+		log.info("Generating signed URL for file: {}", publicUrl);
+		
 		if (publicUrl == null || publicUrl.isEmpty())
 			return "";
 		try {
@@ -102,11 +121,12 @@ public class NewsImageAndVideoFile {
 
 			String signedUrlJson = webClient.post().uri(url).header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
 					.bodyValue(requestBody).retrieve().bodyToMono(String.class).block();
-
+			
 			JsonNode jsonNode = new ObjectMapper().readTree(signedUrlJson);
 			return supabaseUrl + "/storage/v1" + jsonNode.get("signedURL").asText(); // Full https:// URL
 
 		} catch (Exception e) {
+			log.error("Error generating signed URL for {}: {}", publicUrl, e.getMessage(), e);
 			throw new RuntimeException("Error generating signed URL "+e.getMessage(), e);
 		}
 	}
