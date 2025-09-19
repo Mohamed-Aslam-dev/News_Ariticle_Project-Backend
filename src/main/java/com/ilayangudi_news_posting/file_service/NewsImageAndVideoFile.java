@@ -92,7 +92,7 @@ public class NewsImageAndVideoFile {
     public List<String> generateSignedUrls(List<String> filePaths, int expiryInSeconds) {
         return filePaths.stream()
                 .map(path -> {
-                	String url = supabaseUrl + "/storage/v1/object/sign/" + bucketName + "/" + filePaths;
+                	String url = supabaseUrl + "/storage/v1/object/sign/" + bucketName + "/" + path;
                     return webClient.post()
                             .uri(url)
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseKey)
