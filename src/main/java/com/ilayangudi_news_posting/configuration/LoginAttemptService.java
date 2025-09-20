@@ -22,22 +22,24 @@ public class LoginAttemptService {
 		attemptsCache.invalidate(key);
 	}
 
-	public void loginFailed(String key) {
-		Integer attempts = attemptsCache.getIfPresent(key);
-		if (attempts == null)
-			attempts = 0;
-		attempts++;
-		attemptsCache.put(key, attempts);
-	}
-
 	public boolean shouldShowCaptcha(String key) {
 	    Integer attempts = attemptsCache.getIfPresent(key);
 	    return attempts != null && attempts >= CAPTCHA_THRESHOLD && attempts < MAX_ATTEMPT;
 	}
-	
+
+	public void loginFailed(String key) {
+	    Integer attempts = attemptsCache.getIfPresent(key);
+	    if (attempts == null)
+	        attempts = 0;
+	    attempts++;
+	    attemptsCache.put(key, attempts);
+	    System.out.println("❌ Failed attempt for " + key + " => " + attempts);
+	}
+
 	public boolean isBlocked(String key) {
-		Integer attempts = attemptsCache.getIfPresent(key);
-		return attempts != null && attempts >= MAX_ATTEMPT;
+	    Integer attempts = attemptsCache.getIfPresent(key);
+	    System.out.println("🚫 Block check for " + key + " => " + attempts);
+	    return attempts != null && attempts >= MAX_ATTEMPT;
 	}
 
 }

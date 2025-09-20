@@ -18,6 +18,9 @@ public class NewsResponseDTO {
 	private Long views;
 	private Long likes;
 	private Long unLikes;
+	private boolean likedByCurrentUser; // ✅ indicate heart fill
+	private boolean unLikedByCurrentUser; // ✅ indicate heart fill
+	private boolean viewedByCurrentUser; // ✅ indicate heart fill
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Kolkata")
 	private Date createdAt;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Kolkata")
@@ -29,7 +32,8 @@ public class NewsResponseDTO {
 
 	public NewsResponseDTO(Long sNo, String newsTitle, String newsDescription, List<String> imageOrVideoUrl,
 			String author, String category, String tags, String status, Long views, Long likes, Long unLikes,
-			Date createdAt, Date updatedAt) {
+			boolean likedByCurrentUser, boolean unLikedByCurrentUser, boolean viewedByCurrentUser, Date createdAt,
+			Date updatedAt) {
 		super();
 		this.sNo = sNo;
 		this.newsTitle = newsTitle;
@@ -42,10 +46,13 @@ public class NewsResponseDTO {
 		this.views = views;
 		this.likes = likes;
 		this.unLikes = unLikes;
+		this.likedByCurrentUser = likedByCurrentUser;
+		this.unLikedByCurrentUser = unLikedByCurrentUser;
+		this.viewedByCurrentUser = viewedByCurrentUser;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
-	
+
 	public Long getsNo() {
 		return sNo;
 	}
@@ -134,6 +141,30 @@ public class NewsResponseDTO {
 		this.unLikes = unLikes;
 	}
 
+	public boolean isLikedByCurrentUser() {
+		return likedByCurrentUser;
+	}
+
+	public void setLikedByCurrentUser(boolean likedByCurrentUser) {
+		this.likedByCurrentUser = likedByCurrentUser;
+	}
+
+	public boolean isUnLikedByCurrentUser() {
+		return unLikedByCurrentUser;
+	}
+
+	public void setUnLikedByCurrentUser(boolean unLikedByCurrentUser) {
+		this.unLikedByCurrentUser = unLikedByCurrentUser;
+	}
+
+	public boolean isViewedByCurrentUser() {
+		return viewedByCurrentUser;
+	}
+
+	public void setViewedByCurrentUser(boolean viewedByCurrentUser) {
+		this.viewedByCurrentUser = viewedByCurrentUser;
+	}
+
 	public Date getCreatedAt() {
 		return createdAt;
 	}
@@ -155,7 +186,9 @@ public class NewsResponseDTO {
 		return "NewsResponseDTO [sNo=" + sNo + ", newsTitle=" + newsTitle + ", newsDescription=" + newsDescription
 				+ ", imageOrVideoUrl=" + imageOrVideoUrl + ", author=" + author + ", category=" + category + ", tags="
 				+ tags + ", status=" + status + ", views=" + views + ", likes=" + likes + ", unLikes=" + unLikes
-				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
+				+ ", likedByCurrentUser=" + likedByCurrentUser + ", unLikedByCurrentUser=" + unLikedByCurrentUser
+				+ ", viewedByCurrentUser=" + viewedByCurrentUser + ", createdAt=" + createdAt + ", updatedAt="
+				+ updatedAt + "]";
 	}
 
 }

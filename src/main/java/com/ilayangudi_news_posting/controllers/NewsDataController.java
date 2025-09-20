@@ -19,7 +19,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
 import com.ilayangudi_news_posting.response_dto.ApiResponse;
+import com.ilayangudi_news_posting.response_dto.LikeResponseDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
+import com.ilayangudi_news_posting.response_dto.UnlikeResponseDTO;
+import com.ilayangudi_news_posting.response_dto.ViewedResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -76,8 +79,8 @@ public class NewsDataController {
 	}
 
 	@GetMapping("/all")
-	public ResponseEntity<?> getLastOneMonthNewsData() {
-		List<NewsResponseDTO> lastOneMonthNews = newsService.getLastOneMonthNewsData();
+	public ResponseEntity<?> getLastOneMonthNewsData(Principal principal) {
+		List<NewsResponseDTO> lastOneMonthNews = newsService.getLastOneMonthNewsData(principal.getName());
 		if (lastOneMonthNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
 		}
@@ -107,19 +110,19 @@ public class NewsDataController {
 
 	// 👍 Like increment
 	@PatchMapping("/{id}/like")
-	public ResponseEntity<NewsEngagedStatus> toggleLike(@PathVariable Long id, Principal principal) {
+	public ResponseEntity<LikeResponseDTO> toggleLike(@PathVariable Long id, Principal principal) {
 		return ResponseEntity.ok(newsService.toggleLike(id, principal.getName()));
 	}
 
 	// 👎 Unlike increment
 	@PatchMapping("/{id}/unlike")
-	public ResponseEntity<NewsEngagedStatus> addUnLike(@PathVariable Long id, Principal principal) {
+	public ResponseEntity<UnlikeResponseDTO> addUnLike(@PathVariable Long id, Principal principal) {
 		return ResponseEntity.ok(newsService.toggleUnLike(id, principal.getName()));
 	}
 
 	// 👀 Views increment
 	@PatchMapping("/{id}/views")
-	public ResponseEntity<NewsEngagedStatus> addView(@PathVariable Long id, Principal principal) {
+	public ResponseEntity<ViewedResponseDTO> addView(@PathVariable Long id, Principal principal) {
 		return ResponseEntity.ok(newsService.addView(id, principal.getName()));
 	}
 
