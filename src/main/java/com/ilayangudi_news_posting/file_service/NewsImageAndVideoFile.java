@@ -3,6 +3,7 @@ package com.ilayangudi_news_posting.file_service;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -10,15 +11,24 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.handler.timeout.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
@@ -40,8 +50,39 @@ public class NewsImageAndVideoFile {
 	private String bucketName;
 
 	public NewsImageAndVideoFile(WebClient.Builder builder) {
-		this.webClient = builder.build();
+		HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)   // 10s connect timeout
+                .responseTimeout(Duration.ofSeconds(15));              // 15s read timeout
+
+        this.webClient = builder
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
 	}
+	
+	public Mono<String> fetchFile(String url) {
+        return webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(20)) // extra global timeout
+                .onErrorResume(ex -> {
+                    if (ex instanceof WebClientResponseException wex) {
+                        // HTTP status based error
+                        if (wex.getStatusCode() == HttpStatus.NOT_FOUND) {
+                            return Mono.just("File not found!");
+                        }
+                        return Mono.error(new RuntimeException("HTTP Error: " + wex.getStatusCode(), wex));
+                    } else if (ex instanceof ReadTimeoutException || ex instanceof TimeoutException) {
+                        // Timeout error
+                        return Mono.just("Request timed out! Please try again.");
+                    } else if (ex instanceof java.net.ConnectException) {
+                        // Connection refused / DNS error
+                        return Mono.just("Unable to connect to server!");
+                    }
+                    // Other error
+                    return Mono.error(new RuntimeException("Unexpected error occurred", ex));
+                });
+    }
 
 	public List<String> getNewsImageAndVideoFilepaths(MultipartFile[] files, String folder) throws IOException {
 		return Flux.fromArray(files).filter(file -> !file.isEmpty())

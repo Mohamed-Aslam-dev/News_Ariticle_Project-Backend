@@ -13,11 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ilayangudi_news_posting.entity.NewsData;
 import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
 import com.ilayangudi_news_posting.entity.NewsUserEngagement;
+import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.enums.NewsStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.repository.NewsDataRepository;
 import com.ilayangudi_news_posting.repository.NewsStatusRepository;
 import com.ilayangudi_news_posting.repository.NewsUserEngagementRepository;
+import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
 import com.ilayangudi_news_posting.response_dto.LikeResponseDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
@@ -38,6 +40,9 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
 	@Autowired
 	private NewsUserEngagementRepository newsUserEngagementRepo;
+
+	@Autowired
+	private UserRegisterDataRepository userRegisterDataRepo;
 
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
@@ -66,17 +71,13 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	@Override
 	public List<NewsResponseDTO> getNewsDataFromHomePage() {
 		Pageable limit = PageRequest.of(0, 4);
-		List<NewsData> latestNews = newsDataRepository.findTop4LatestNews(limit);
-
-		return getNewsDatas(latestNews, null);
+		return newsDataRepository.findTop4LatestNews(limit);
 	}
 
 	@Override
 	public List<NewsResponseDTO> getLastOneMonthNewsData(String userName) {
 		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-		List<NewsData> lastOneMonthNews = newsDataRepository.findPublishedNewsLastMonth(oneMonthAgo);
-
-		return getNewsDatas(lastOneMonthNews, userName);
+		return newsDataRepository.findPublishedNewsLastMonth(oneMonthAgo, userName);
 	}
 
 	@Override
@@ -119,7 +120,12 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 			likedNow = false;
 		} else {
 			engagement.setLiked(true);
-			engagement.setDisliked(false); // cannot dislike if liked
+			// if previously liked → remove that like count
+			if (engagement.isDisliked()) {
+				engagement.setDisliked(false); // cannot dislike if liked
+				status.setUnLikes(Math.max(status.getUnLikes() - 1, 0));
+			}
+
 			status.setLikes(status.getLikes() + 1);
 			likedNow = true;
 		}
@@ -154,7 +160,11 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 			unlikedNow = false;
 		} else {
 			engagement.setDisliked(true);
-			engagement.setLiked(false); // cannot like if disliked
+			// if previously liked → remove that like count
+			if (engagement.isLiked()) {
+				engagement.setLiked(false);
+				status.setLikes(Math.max(status.getLikes() - 1, 0));
+			}
 			status.setUnLikes(status.getUnLikes() + 1);
 			unlikedNow = true;
 		}
@@ -254,62 +264,6 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 		newsDataRepository.save(news);
 
 		return true;
-	}
-
-	private List<NewsResponseDTO> getNewsDatas(List<NewsData> newsList, String userName) {
-
-		return newsList.stream().map(news -> {
-			NewsResponseDTO dto = new NewsResponseDTO();
-			dto.setsNo(news.getsNo());
-			dto.setNewsTitle(news.getNewsTitle());
-			dto.setNewsDescription(news.getNewsDescription());
-
-			// ✅ Convert String -> List<String>
-			List<String> imageUrls;
-			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-				// original relative paths
-				imageUrls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
-			} else {
-				imageUrls = null;
-			}
-			dto.setImageOrVideoUrl(imageUrls);
-
-			dto.setAuthor(news.getAuthor());
-			dto.setCategory(news.getCategory());
-			dto.setTags(news.getTags().toString());
-			dto.setStatus(news.getStatus().name());
-			// ✅ Engagement (from NewsEngagedStatus)
-			if (news.getNewsEngagedStatus() != null) {
-				dto.setViews(news.getNewsEngagedStatus().getViews());
-				dto.setLikes(news.getNewsEngagedStatus().getLikes());
-				dto.setUnLikes(news.getNewsEngagedStatus().getUnLikes());
-			} else {
-				dto.setViews(0L);
-				dto.setLikes(0L);
-				dto.setUnLikes(0L);
-			}
-
-			Optional<NewsUserEngagement> engagementOpt = newsUserEngagementRepo.findByNewsAndUsername(news, userName);
-
-			NewsUserEngagement engagement = engagementOpt
-					.orElse(new NewsUserEngagement(null, userName, false, false, false, news));
-
-			if (userName != null && !userName.isEmpty()) {
-				dto.setLikedByCurrentUser(engagement.isLiked());
-				dto.setUnLikedByCurrentUser(engagement.isDisliked());
-				dto.setViewedByCurrentUser(engagement.isViewed());
-			} else {
-				dto.setLikedByCurrentUser(false);
-				dto.setUnLikedByCurrentUser(false);
-				dto.setViewedByCurrentUser(false);
-
-			}
-
-			dto.setCreatedAt(news.getCreatedAt());
-			dto.setUpdatedAt(news.getUpdatedAt());
-			return dto;
-		}).toList();
-
 	}
 
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
+import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
 import com.ilayangudi_news_posting.response_dto.ApiResponse;
 import com.ilayangudi_news_posting.response_dto.LikeResponseDTO;
@@ -38,6 +39,10 @@ public class NewsDataController {
 
 	@Autowired
 	private Validator validator;
+	
+	@Autowired
+	private NewsImageAndVideoFile newsFileStore;
+
 
 	@PostMapping(value = "/upload")
 	public ResponseEntity<?> uploadNews(@RequestPart("newsData") String newsDataJson,
@@ -74,6 +79,14 @@ public class NewsDataController {
 		if (latestNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
 		}
+		
+		// ✅ Generate signed URLs separately if needed
+	    latestNews.forEach(news -> {
+	        if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+	            List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+	            news.setImageOrVideoUrl(urls);
+	        }
+	    });
 
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", latestNews));
 	}
@@ -84,6 +97,14 @@ public class NewsDataController {
 		if (lastOneMonthNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
 		}
+		
+		// ✅ Generate signed URLs separately if needed
+		lastOneMonthNews.forEach(news -> {
+	        if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+	            List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+	            news.setImageOrVideoUrl(urls);
+	        }
+	    });
 
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthNews));
 	}

@@ -1,8 +1,9 @@
 package com.ilayangudi_news_posting.response_dto;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class NewsResponseDTO {
@@ -11,7 +12,8 @@ public class NewsResponseDTO {
 	private String newsTitle;
 	private String newsDescription;
 	private List<String> imageOrVideoUrl;
-	private String author;
+	private String authorEmail;
+	private String authorName;
 	private String category;
 	private String tags;
 	private String status;
@@ -30,25 +32,26 @@ public class NewsResponseDTO {
 
 	}
 
-	public NewsResponseDTO(Long sNo, String newsTitle, String newsDescription, List<String> imageOrVideoUrl,
-			String author, String category, String tags, String status, Long views, Long likes, Long unLikes,
-			boolean likedByCurrentUser, boolean unLikedByCurrentUser, boolean viewedByCurrentUser, Date createdAt,
-			Date updatedAt) {
-		super();
+	public NewsResponseDTO(Long sNo, String newsTitle, String newsDescription, String imageOrVideoUrl,
+			String authorEmail, String authorName, String category, String tags, String status, Long views, Long likes,
+			Long unlikes, boolean likedByCurrentUser, boolean unLikedByCurrentUser, boolean viewedByCurrentUser,
+			Date createdAt, Date updatedAt) {
 		this.sNo = sNo;
 		this.newsTitle = newsTitle;
 		this.newsDescription = newsDescription;
-		this.imageOrVideoUrl = imageOrVideoUrl;
-		this.author = author;
+		this.authorEmail = authorEmail;
+		this.authorName = authorName;
+		// split comma-separated string into list
+		this.imageOrVideoUrl = imageOrVideoUrl != null ? Arrays.asList(imageOrVideoUrl.split(",")) : new ArrayList<>();
 		this.category = category;
 		this.tags = tags;
 		this.status = status;
 		this.views = views;
 		this.likes = likes;
-		this.unLikes = unLikes;
 		this.likedByCurrentUser = likedByCurrentUser;
 		this.unLikedByCurrentUser = unLikedByCurrentUser;
 		this.viewedByCurrentUser = viewedByCurrentUser;
+		this.unLikes = unlikes;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
@@ -85,12 +88,20 @@ public class NewsResponseDTO {
 		this.imageOrVideoUrl = imageOrVideoUrl;
 	}
 
-	public String getAuthor() {
-		return author;
+	public String getAuthorEmail() {
+		return authorEmail;
 	}
 
-	public void setAuthor(String author) {
-		this.author = author;
+	public void setAuthorEmail(String authorEmail) {
+		this.authorEmail = authorEmail;
+	}
+
+	public String getAuthorName() {
+		return authorName;
+	}
+
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
 	}
 
 	public String getCategory() {
@@ -184,11 +195,11 @@ public class NewsResponseDTO {
 	@Override
 	public String toString() {
 		return "NewsResponseDTO [sNo=" + sNo + ", newsTitle=" + newsTitle + ", newsDescription=" + newsDescription
-				+ ", imageOrVideoUrl=" + imageOrVideoUrl + ", author=" + author + ", category=" + category + ", tags="
-				+ tags + ", status=" + status + ", views=" + views + ", likes=" + likes + ", unLikes=" + unLikes
-				+ ", likedByCurrentUser=" + likedByCurrentUser + ", unLikedByCurrentUser=" + unLikedByCurrentUser
-				+ ", viewedByCurrentUser=" + viewedByCurrentUser + ", createdAt=" + createdAt + ", updatedAt="
-				+ updatedAt + "]";
+				+ ", imageOrVideoUrl=" + imageOrVideoUrl + ", authorEmail=" + authorEmail + ", authorName=" + authorName
+				+ ", category=" + category + ", tags=" + tags + ", status=" + status + ", views=" + views + ", likes="
+				+ likes + ", unLikes=" + unLikes + ", likedByCurrentUser=" + likedByCurrentUser
+				+ ", unLikedByCurrentUser=" + unLikedByCurrentUser + ", viewedByCurrentUser=" + viewedByCurrentUser
+				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
 	}
 
 }

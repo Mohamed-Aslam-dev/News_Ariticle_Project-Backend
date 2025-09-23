@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ilayangudi_news_posting.convertor.NewsTagsConverter;
 import com.ilayangudi_news_posting.enums.NewsStatus;
