@@ -30,7 +30,7 @@ public class SecurityConfig {
         .cors(withDefaults())   // ✅ enable CORS support
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/new-user", "/auth/send-otp", "/auth/verify-otp", "/auth/user-login", "/auth/refresh", "/auth/forget-password/**","/news/home", "/images/**", "/actuator/**").permitAll()   // login & register open
-                .requestMatchers("/news/**","/user/**").hasAnyRole("USER") // news protected
+                .requestMatchers("/news/**","/user/**").hasAnyRole("USER", "SUPER_ADMIN") // news protected
                 .requestMatchers("/super/v1/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/auth/logout").authenticated()
                 .anyRequest().denyAll()

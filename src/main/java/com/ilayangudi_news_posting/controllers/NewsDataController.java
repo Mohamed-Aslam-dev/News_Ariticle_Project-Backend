@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ilayangudi_news_posting.configuration.JwtUtil;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
 import com.ilayangudi_news_posting.request_dto.NewsReportDTO;
@@ -26,6 +27,8 @@ import com.ilayangudi_news_posting.response_dto.UnlikeResponseDTO;
 import com.ilayangudi_news_posting.response_dto.ViewedResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -41,6 +44,9 @@ public class NewsDataController {
 
 	@Autowired
 	private Validator validator;
+	
+	@Autowired
+	private JwtUtil jwtUtil;
 	
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
@@ -76,8 +82,15 @@ public class NewsDataController {
 	}
 
 	@GetMapping(value = "/home", produces = "application/json")
-	public ResponseEntity<?> getNewsDataFromHomePage() {
-		List<NewsResponseDTO> latestNews = newsService.getNewsDataFromHomePage();
+	public ResponseEntity<?> getNewsDataFromHomePage(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+		
+		String userEmail = null;
+	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	        String token = authHeader.substring(7);
+	        userEmail = jwtUtil.extractUsername(token);  // optional user info
+	    }
+		
+		List<NewsResponseDTO> latestNews = newsService.getNewsDataFromHomePage(userEmail);
 		if (latestNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
 		}

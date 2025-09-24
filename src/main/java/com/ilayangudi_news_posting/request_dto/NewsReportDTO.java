@@ -1,7 +1,7 @@
 package com.ilayangudi_news_posting.request_dto;
 
-import com.ilayangudi_news_posting.enums.ReportReason;
 
+import com.ilayangudi_news_posting.enums.ReportStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -11,7 +11,7 @@ public class NewsReportDTO {
 	@Size(max = 500, message = "அறிக்கை உள்ளடக்கம் 500 எழுத்துக்களை மீறக் கூடாது")
 	private String reportContent;
 
-	private ReportReason reasonMode = ReportReason.NEW; // Optional
+	private ReportStatus reasonMode = ReportStatus.NEW; // Optional
 
 	public NewsReportDTO() {
 
@@ -19,7 +19,7 @@ public class NewsReportDTO {
 
 	public NewsReportDTO(
 			@NotBlank(message = "அறிக்கை உள்ளடக்கம் காலியாக இருக்க கூடாது") @Size(max = 500, message = "அறிக்கை உள்ளடக்கம் 500 எழுத்துக்களை மீறக் கூடாது") String reportContent,
-			ReportReason reasonMode) {
+			ReportStatus reasonMode) {
 
 		this.reportContent = reportContent;
 		this.reasonMode = reasonMode;
@@ -33,11 +33,11 @@ public class NewsReportDTO {
 		this.reportContent = reportContent;
 	}
 
-	public ReportReason getReasonMode() {
+	public ReportStatus getReasonMode() {
 		return reasonMode;
 	}
 
-	public void setReasonMode(ReportReason reasonMode) {
+	public void setReasonMode(ReportStatus reasonMode) {
 		this.reasonMode = reasonMode;
 	}
 

@@ -1,6 +1,6 @@
 package com.ilayangudi_news_posting.enums;
 
-public enum ReportReason {
+public enum ReportStatus {
 	
 	NEW, REVIEWED, REJECTED
 

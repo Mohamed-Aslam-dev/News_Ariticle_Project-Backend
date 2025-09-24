@@ -1,12 +1,9 @@
 package com.ilayangudi_news_posting.entity;
 
 import java.time.LocalDateTime;
-
 import org.hibernate.annotations.CreationTimestamp;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.ilayangudi_news_posting.enums.ReportReason;
-
+import com.ilayangudi_news_posting.enums.ReportStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,7 +37,7 @@ public class NewsReports {
 	private String reportContent;
 
 	@Enumerated(EnumType.STRING)
-	private ReportReason reason;
+	private ReportStatus reason;
 
 	@CreationTimestamp
 	private LocalDateTime reportedAt;
@@ -56,7 +53,7 @@ public class NewsReports {
 	}
 
 	public NewsReports(Long sNo, String userEmail, String userName, String userMobileNumber, String reportContent,
-			ReportReason reason, LocalDateTime reportedAt, NewsData news) {
+			ReportStatus reason, LocalDateTime reportedAt, NewsData news) {
 		this.sNo = sNo;
 		this.userEmail = userEmail;
 		this.userName = userName;
@@ -107,11 +104,11 @@ public class NewsReports {
 		this.reportContent = reportContent;
 	}
 
-	public ReportReason getReason() {
+	public ReportStatus getReason() {
 		return reason;
 	}
 
-	public void setReason(ReportReason reason) {
+	public void setReason(ReportStatus reason) {
 		this.reason = reason;
 	}
 

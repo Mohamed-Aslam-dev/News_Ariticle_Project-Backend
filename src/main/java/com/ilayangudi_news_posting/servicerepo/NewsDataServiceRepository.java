@@ -14,7 +14,7 @@ public interface NewsDataServiceRepository {
 
 	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] file, Principal principal);
 
-	List<NewsResponseDTO> getNewsDataFromHomePage();
+	List<NewsResponseDTO> getNewsDataFromHomePage(String userName);
 
 	public List<NewsResponseDTO> getLastOneMonthNewsData(String userName);
 

@@ -84,9 +84,9 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	}
 
 	@Override
-	public List<NewsResponseDTO> getNewsDataFromHomePage() {
+	public List<NewsResponseDTO> getNewsDataFromHomePage(String username) {
 		Pageable limit = PageRequest.of(0, 4);
-		return newsDataRepository.findTop4LatestNews(limit);
+		return newsDataRepository.findTop4LatestNews(limit, username);
 	}
 
 	@Override

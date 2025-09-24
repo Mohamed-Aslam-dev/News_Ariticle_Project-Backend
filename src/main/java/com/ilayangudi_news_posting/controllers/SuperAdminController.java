@@ -12,17 +12,22 @@ import com.ilayangudi_news_posting.servicerepo.SuperAdminServiceRepository;
 @RestController
 @RequestMapping("/super/v1")
 public class SuperAdminController {
-	
+
 	@Autowired
 	private SuperAdminServiceRepository superAdminServiceRepo;
-	
+
 	@GetMapping("/auth/user-data")
-	public ResponseEntity<?> getAllDatasForSuperAdmin(Principal principal){
-		
+	public ResponseEntity<?> getAllDatasForSuperAdmin(Principal principal) {
+
 		return ResponseEntity.ok(superAdminServiceRepo.getAllDatasForSuperAdmin(principal.getName()));
-		
+
 	}
-	
-	
+
+	@GetMapping("/auth/user-reports")
+	public ResponseEntity<?> getAllReportDatasForSuperAdmin(Principal principal) {
+
+		return ResponseEntity.ok(superAdminServiceRepo.getAllReportsDataForSuperAdmin(principal.getName()));
+
+	}
 
 }

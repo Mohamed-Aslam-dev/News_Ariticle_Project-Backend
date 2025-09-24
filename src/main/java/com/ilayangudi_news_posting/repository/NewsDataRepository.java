@@ -28,19 +28,22 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 				    COALESCE(e.views, 0),
 				    COALESCE(e.likes, 0),
 				    COALESCE(e.unLikes, 0),
-				    false,
-				    false,
-				    false,
+				    COALESCE(m.liked, false),
+				    COALESCE(m.disliked, false),
+				    COALESCE(m.viewed, false),
 				    n.createdAt,
 				    n.updatedAt
 					)
 					FROM NewsData n
 					LEFT JOIN NewsEngagedStatus e ON e.news = n
 					LEFT JOIN UserRegisterData u ON u.emailId = n.author
+					LEFT JOIN NewsUserEngagement m
+					ON m.news = n
+					AND m.username = :currentUsername
 					WHERE n.status = 'PUBLISHED'
 					ORDER BY COALESCE(n.updatedAt, n.createdAt) DESC
 			""")
-	public List<NewsResponseDTO> findTop4LatestNews(Pageable pageable);
+	public List<NewsResponseDTO> findTop4LatestNews(Pageable pageable, @Param("currentUsername") String currentUsername);
 
 	@Query("""
 				    SELECT new com.ilayangudi_news_posting.response_dto.NewsResponseDTO(
