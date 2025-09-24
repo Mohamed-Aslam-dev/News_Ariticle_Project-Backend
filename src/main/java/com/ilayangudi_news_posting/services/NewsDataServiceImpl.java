@@ -10,17 +10,23 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.Ilayangudi_news.exceptions.ResourcesNotFoundException;
 import com.ilayangudi_news_posting.entity.NewsData;
 import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
+import com.ilayangudi_news_posting.entity.NewsReports;
 import com.ilayangudi_news_posting.entity.NewsUserEngagement;
 import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.enums.NewsStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
+import com.ilayangudi_news_posting.message_services.EmailSenderService;
 import com.ilayangudi_news_posting.repository.NewsDataRepository;
+import com.ilayangudi_news_posting.repository.NewsReportRepository;
 import com.ilayangudi_news_posting.repository.NewsStatusRepository;
 import com.ilayangudi_news_posting.repository.NewsUserEngagementRepository;
 import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
+import com.ilayangudi_news_posting.request_dto.NewsReportDTO;
 import com.ilayangudi_news_posting.response_dto.LikeResponseDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.response_dto.UnlikeResponseDTO;
@@ -32,6 +38,8 @@ import jakarta.transaction.Transactional;
 @Service
 public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
+    private final EmailSenderService emailSenderService;
+
 	@Autowired
 	private NewsDataRepository newsDataRepository;
 
@@ -42,10 +50,17 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	private NewsUserEngagementRepository newsUserEngagementRepo;
 
 	@Autowired
+	private NewsReportRepository newsReportRepo;
+
+	@Autowired
 	private UserRegisterDataRepository userRegisterDataRepo;
 
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
+
+    NewsDataServiceImpl(EmailSenderService emailSenderService) {
+        this.emailSenderService = emailSenderService;
+    }
 
 	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] files, Principal principal) {
 		try {
@@ -203,6 +218,51 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 		newsStatusRepository.save(status);
 		return new ViewedResponseDTO(news.getsNo(), status.getViews(), viewed);
 	}
+
+	@Override
+	public boolean addNewsReport(Long newsId, NewsReportDTO newsReportData, Principal principal) {
+
+	    // ✅ Check if report already exists
+	    boolean exists = newsReportRepo.existsByUserEmailAndNews_sNo(principal.getName(), newsId);
+	    if (exists) return false;
+
+	    // ✅ Fetch reporter
+	    UserRegisterData reporter = userRegisterDataRepo.findByEmailId(principal.getName())
+	            .orElseThrow(() -> new RuntimeException("Reporter not found"));
+
+	    // ✅ Fetch news
+	    NewsData news = newsDataRepository.findById(newsId)
+	            .orElseThrow(() -> new ResourcesNotFoundException("News not found"));
+
+	    // ✅ Create and save report
+	    NewsReports report = NewsReports.builder()
+	            .userEmail(reporter.getEmailId())
+	            .userName(reporter.getUserName())
+	            .userMobileNumber(reporter.getUserMobileNumber())
+	            .reportContent(newsReportData.getReportContent())
+	            .reason(newsReportData.getReasonMode())
+	            .news(news)
+	            .build();
+
+	    newsReportRepo.save(report);
+
+	    // ✅ Fetch news author
+	    UserRegisterData newsAuthor = userRegisterDataRepo.findByEmailId(news.getAuthor())
+	            .orElseThrow(() -> new RuntimeException("News author not found"));
+
+	    // ✅ Send email asynchronously
+	    emailSenderService.sendEmailFromReportOurPost(
+	            newsAuthor.getEmailId(),
+	            newsAuthor.getUserName(),
+	            news.getsNo(),
+	            news.getNewsTitle(),
+	            report.getsNo(),
+	            report.getReportContent()
+	    );
+
+	    return true;
+	}
+
 
 	public boolean newsPostMoveToArchive(Long id, Principal principal) {
 		Optional<NewsData> optionalNews = newsDataRepository.findById(id);

@@ -3,6 +3,7 @@ package com.ilayangudi_news_posting.message_services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -90,6 +91,32 @@ public class EmailSenderService {
 			mailSender.send(messageOnMail);
 			
 		}
+	
+	@Async
+	public void sendEmailFromReportOurPost(String toEmail, String userName, Long newsNo, String newsTitle, Long reportTokenNo, String reportReason) {
+		
+		SimpleMailMessage message = new SimpleMailMessage();
+
+		message.setTo(toEmail);
+		message.setSubject("இளையான்குடி நியூஸ் - செய்தி புகார் அறிவிப்பு");
+
+		message.setText(
+		    "அன்புள்ள "+userName+",\n\n" +
+		    "நீங்கள் வெளியிட்ட செய்தி எண்: " + newsNo + " - '" + newsTitle + "' மீது புதிய புகார் சேர்க்கப்பட்டது.\n\n" +
+		    "புகாரின் காரணம்: " + reportReason + "\n" +
+		    "புகார் குறிப்பு எண்: " + reportTokenNo + "\n\n" +
+		    "இது குறித்து இளையான்குடி நியூஸ் குழுவும் பரிசீலனை செய்யும். \n\n"+
+		    "நீங்களும் தயவு செய்து அந்த செய்தியை சரிபார்த்து தேவையான நடவடிக்கைகளை எடுக்கவும்.\n\n" +
+		    "மேலும் எதேனும் சந்தேகங்கள் இருக்கும் பட்ச்சத்தில் எங்களை தொடர்பு கொள்ளவும். \n\n"+
+		    "நன்றி!\n\n" +
+		    "அன்புடன்,\n" +
+		    "இளையான்குடி நியூஸ் குழு\n" +
+		    "Spicy Coding – Software Development, சென்னை"
+		);
+
+		mailSender.send(message);
+		
+	}
 	
 
 }

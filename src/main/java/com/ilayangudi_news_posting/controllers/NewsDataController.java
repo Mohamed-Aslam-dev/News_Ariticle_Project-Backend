@@ -16,16 +16,18 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
+import com.ilayangudi_news_posting.request_dto.NewsReportDTO;
 import com.ilayangudi_news_posting.response_dto.ApiResponse;
 import com.ilayangudi_news_posting.response_dto.LikeResponseDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.response_dto.UnlikeResponseDTO;
 import com.ilayangudi_news_posting.response_dto.ViewedResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
@@ -145,6 +147,19 @@ public class NewsDataController {
 	@PatchMapping("/{id}/views")
 	public ResponseEntity<ViewedResponseDTO> addView(@PathVariable Long id, Principal principal) {
 		return ResponseEntity.ok(newsService.addView(id, principal.getName()));
+	}
+	
+	@PostMapping("/{id}/report")
+	public ResponseEntity<?> addReport(@PathVariable Long id, @Valid @RequestBody NewsReportDTO newsReportData, Principal principal){
+	    
+		System.out.println("DEBUG Content = " + newsReportData.getReportContent());
+	    boolean isReported = newsService.addNewsReport(id, newsReportData, principal);
+	    if(!isReported) {
+	        return ResponseEntity.status(HttpStatus.CONFLICT)
+	                             .body("You have already reported this news!");
+	    }
+	    
+	    return ResponseEntity.ok("Your report has been saved successfully");
 	}
 
 	@PatchMapping("/post/{id}/archived")

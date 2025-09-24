@@ -48,7 +48,7 @@ public class HandleExceptions {
 	@ExceptionHandler(ResourcesNotFoundException.class)
     public ResponseEntity<String> resourcesNotFoundExceptionException(ResourcesNotFoundException ex) {
         return ResponseEntity
-                .status(HttpStatus.PAYLOAD_TOO_LARGE)  // 413
+                .status(HttpStatus.NOT_FOUND)  // 413
                 .body(ex.getMessage());
     }
 	

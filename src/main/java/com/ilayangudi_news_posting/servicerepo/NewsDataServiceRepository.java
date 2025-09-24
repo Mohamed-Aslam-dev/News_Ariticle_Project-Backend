@@ -3,8 +3,8 @@ package com.ilayangudi_news_posting.servicerepo;
 import java.security.Principal;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
-import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
 import com.ilayangudi_news_posting.request_dto.NewsDataDTO;
+import com.ilayangudi_news_posting.request_dto.NewsReportDTO;
 import com.ilayangudi_news_posting.response_dto.LikeResponseDTO;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.response_dto.UnlikeResponseDTO;
@@ -25,6 +25,8 @@ public interface NewsDataServiceRepository {
 	public UnlikeResponseDTO toggleUnLike(Long newsId, String username);
 
 	public ViewedResponseDTO addView(Long newsId, String username);
+
+	public boolean addNewsReport(Long id, NewsReportDTO newsReportData, Principal principal);
 
 	public boolean newsPostMoveToArchive(Long id, Principal principal);
 

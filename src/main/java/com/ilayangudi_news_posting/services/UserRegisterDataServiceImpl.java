@@ -86,7 +86,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 			userRegisterdata.setEmailId(userDataDto.getEmailId());
 			userRegisterdata.setUserMobileNumber(userDataDto.getUserMobileNumber());
 			userRegisterdata.setPassword(passwordEncoder.encode(userDataDto.getPassword()));
-			userRegisterdata.setRole("USER");
+			userRegisterdata.setRole(userDataDto.getRole());
 
 			emailSenderService.sendEmailFromRegisteration(userRegisterdata.getEmailId(),
 					userRegisterdata.getUserName());
