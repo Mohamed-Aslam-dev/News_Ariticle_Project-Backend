@@ -3,6 +3,8 @@ package com.Ilayangudi_news.exceptions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -50,6 +52,13 @@ public class HandleExceptions {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)  // 413
                 .body(ex.getMessage());
+    }
+	
+	@ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<?> handleUnauthorized(UnauthorizedAccessException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(Map.of("message", ex.getMessage()));
     }
 	
 

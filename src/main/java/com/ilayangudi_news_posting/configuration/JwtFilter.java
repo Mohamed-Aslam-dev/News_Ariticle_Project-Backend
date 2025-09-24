@@ -68,12 +68,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
 		} catch (ExpiredJwtException e) {
 			// ⚡ Handle JWT expiration here
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			response.setContentType("application/json;charset=UTF-8");
 			response.getWriter().write(
 					"{\"message\":\"நீங்கள் யார் என்று என்னால் அறிய முடியவில்லை, தயவுசெய்து மீண்டும் உள்நுழையவும்/Please Login\"}");
 		} catch (RuntimeException e) {
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			response.setContentType("application/json;charset=UTF-8");
 			response.getWriter().write("{\"message\":\"Token இல்லை அல்லது தவறான Token ஆதலால் உள்நுழைவு பக்கம்(Login page) வழியாக மீண்டும் உள்நுழையவும்\"}");
 		}

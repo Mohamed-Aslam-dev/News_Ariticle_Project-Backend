@@ -17,9 +17,11 @@ public interface UserRegisterDataRepository extends JpaRepository<UserRegisterDa
 	boolean existsByEmailId(String emailId);
 
 	boolean existsByUserMobileNumber(String userMobileNumber);
-
+	
 	Optional<UserRegisterData> findByResetToken(String resetToken);
 
 	Optional<UserRegisterData> findByEmailId(String email);
+	
+	boolean existsByEmailIdAndRole(String emailId, String role);
 
 }
