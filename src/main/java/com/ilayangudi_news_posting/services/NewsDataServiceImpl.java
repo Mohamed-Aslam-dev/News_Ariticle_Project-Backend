@@ -251,7 +251,7 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	            .orElseThrow(() -> new RuntimeException("News author not found"));
 
 	    // ✅ Send email asynchronously
-	    emailSenderService.sendEmailFromReportOurPost(
+	    emailSenderService.sendEmailPostReportReminderFromNewStatus(
 	            newsAuthor.getEmailId(),
 	            newsAuthor.getUserName(),
 	            news.getsNo(),

@@ -2,6 +2,6 @@ package com.ilayangudi_news_posting.enums;
 
 public enum ReportStatus {
 	
-	NEW, REVIEWED, REJECTED
+	NEW, REVIEWED, REJECTED, DELETED
 
 }

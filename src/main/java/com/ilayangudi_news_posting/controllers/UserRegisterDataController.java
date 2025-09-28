@@ -124,6 +124,9 @@ public class UserRegisterDataController {
 	public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse resp) {
 	    String key = request.getEmailOrPhone();
 	    log.info("➡️ Login attempt for key={}", key);
+	    
+	    // 🔑 Validate account status (this may throw exception handled by @RestControllerAdvice)
+	    userServiceRepo.checkUserAccountStatus(key);
 
 	    // 1️⃣ First check if blocked (before password check)
 	    if (loginAttemptService.isBlocked(key)) {
@@ -141,6 +144,7 @@ public class UserRegisterDataController {
 	    }
 
 	    try {
+	    	
 	        authManager.authenticate(new UsernamePasswordAuthenticationToken(key, request.getPassword()));
 
 	        // success -> reset attempts

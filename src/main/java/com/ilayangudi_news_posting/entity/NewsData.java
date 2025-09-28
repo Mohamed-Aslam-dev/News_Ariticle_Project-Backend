@@ -14,9 +14,11 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -45,11 +47,17 @@ public class NewsData {
 	@UpdateTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date updatedAt;
-	
+
 	// Relationship
-    @OneToOne(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private NewsEngagedStatus newsEngagedStatus;
+	@OneToOne(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
+	private NewsEngagedStatus newsEngagedStatus;
+
+	@OneToMany(mappedBy = "news", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<NewsUserEngagement> userEngagements = new ArrayList<>();
+
+	@OneToMany(mappedBy = "news", cascade = CascadeType.ALL)
+	private List<NewsReports> reports = new ArrayList<>();
 
 	public NewsData() {
 
@@ -57,8 +65,7 @@ public class NewsData {
 
 	public NewsData(Long sNo, String newsTitle, String newsDescription, List<String> imageOrVideoUrl, String author,
 			String category, List<String> tags, NewsStatus status, Date createdAt, Date updatedAt,
-			NewsEngagedStatus newsEngagedStatus) {
-		super();
+			NewsEngagedStatus newsEngagedStatus, List<NewsUserEngagement> userEngagements, List<NewsReports> reports) {
 		this.sNo = sNo;
 		this.newsTitle = newsTitle;
 		this.newsDescription = newsDescription;
@@ -70,6 +77,8 @@ public class NewsData {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 		this.newsEngagedStatus = newsEngagedStatus;
+		this.userEngagements = userEngagements;
+		this.reports = reports;
 	}
 
 	public Long getsNo() {
@@ -160,12 +169,29 @@ public class NewsData {
 		this.newsEngagedStatus = newsEngagedStatus;
 	}
 
+	public List<NewsUserEngagement> getUserEngagements() {
+		return userEngagements;
+	}
+
+	public void setUserEngagements(List<NewsUserEngagement> userEngagements) {
+		this.userEngagements = userEngagements;
+	}
+
+	public List<NewsReports> getReports() {
+		return reports;
+	}
+
+	public void setReports(List<NewsReports> reports) {
+		this.reports = reports;
+	}
+
 	@Override
 	public String toString() {
 		return "NewsData [sNo=" + sNo + ", newsTitle=" + newsTitle + ", newsDescription=" + newsDescription
 				+ ", imageOrVideoUrl=" + imageOrVideoUrl + ", author=" + author + ", category=" + category + ", tags="
 				+ tags + ", status=" + status + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt
-				+ ", newsEngagedStatus=" + newsEngagedStatus + "]";
+				+ ", newsEngagedStatus=" + newsEngagedStatus + ", userEngagements=" + userEngagements + ", reports="
+				+ reports + "]";
 	}
 
 }

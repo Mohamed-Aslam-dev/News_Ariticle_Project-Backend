@@ -15,5 +15,7 @@ public interface UserRegisterDataServiceRepository {
 	public boolean generateResetToken(ForgetPasswordRequestDTO forgetPasswordRequest);
 
 	public boolean resetPasswordWithToken(ForgetPasswordDto forgetPasswordDto);
+	
+	public String checkUserAccountStatus(String userEmailOrMobile);
 
 }

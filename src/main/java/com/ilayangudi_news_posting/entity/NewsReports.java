@@ -41,6 +41,10 @@ public class NewsReports {
 
 	@CreationTimestamp
 	private LocalDateTime reportedAt;
+	
+	private LocalDateTime reviewedAt;
+	
+	private LocalDateTime deletedAt;
 
 	// Foreign key to NewsData
 	@ManyToOne
@@ -53,7 +57,9 @@ public class NewsReports {
 	}
 
 	public NewsReports(Long sNo, String userEmail, String userName, String userMobileNumber, String reportContent,
-			ReportStatus reason, LocalDateTime reportedAt, NewsData news) {
+			ReportStatus reason, LocalDateTime reportedAt, LocalDateTime reviewedAt, LocalDateTime deletedAt,
+			NewsData news) {
+		super();
 		this.sNo = sNo;
 		this.userEmail = userEmail;
 		this.userName = userName;
@@ -61,6 +67,8 @@ public class NewsReports {
 		this.reportContent = reportContent;
 		this.reason = reason;
 		this.reportedAt = reportedAt;
+		this.reviewedAt = reviewedAt;
+		this.deletedAt = deletedAt;
 		this.news = news;
 	}
 
@@ -119,6 +127,22 @@ public class NewsReports {
 	public void setReportedAt(LocalDateTime reportedAt) {
 		this.reportedAt = reportedAt;
 	}
+	
+	public LocalDateTime getReviewedAt() {
+		return reviewedAt;
+	}
+
+	public void setReviewedAt(LocalDateTime reviewedAt) {
+		this.reviewedAt = reviewedAt;
+	}
+	
+	public LocalDateTime getDeletedAt() {
+		return deletedAt;
+	}
+
+	public void setDeletedAt(LocalDateTime deletedAt) {
+		this.deletedAt = deletedAt;
+	}
 
 	public NewsData getNews() {
 		return news;
@@ -132,9 +156,13 @@ public class NewsReports {
 	public String toString() {
 		return "NewsReports [sNo=" + sNo + ", userEmail=" + userEmail + ", userName=" + userName + ", userMobileNumber="
 				+ userMobileNumber + ", reportContent=" + reportContent + ", reason=" + reason + ", reportedAt="
-				+ reportedAt + ", news=" + news + "]";
+				+ reportedAt + ", reviewedAt=" + reviewedAt + ", news=" + news + "]";
 	}
 
 	
+
+
+
 	
+
 }

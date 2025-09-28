@@ -7,6 +7,8 @@ import jakarta.persistence.Enumerated;
 
 public class SuperAdminReportsResponse {
 
+	private Long id;
+
 	private String reporterEmail;
 
 	private String reporterName;
@@ -29,15 +31,21 @@ public class SuperAdminReportsResponse {
 	private String newsPosterEmail;
 
 	private String newsPosterMobileNumber;
+	
+	private LocalDateTime reviewedAt;
+	
+	private LocalDateTime deletedAt;
 
 	public SuperAdminReportsResponse() {
 
 	}
 
-	public SuperAdminReportsResponse(String reporterEmail, String reporterName, String reporterMobileNumber,
+	public SuperAdminReportsResponse(Long id, String reporterEmail, String reporterName, String reporterMobileNumber,
 			String reportContent, ReportStatus reportStatus, Long newsId, String newsTitle, LocalDateTime reportedAt,
-			String newsPosterName, String newsPosterEmail, String newsPosterMobileNumber) {
-
+			String newsPosterName, String newsPosterEmail, String newsPosterMobileNumber, LocalDateTime reviewedAt,
+			LocalDateTime deletedAt) {
+		super();
+		this.id = id;
 		this.reporterEmail = reporterEmail;
 		this.reporterName = reporterName;
 		this.reporterMobileNumber = reporterMobileNumber;
@@ -49,6 +57,16 @@ public class SuperAdminReportsResponse {
 		this.newsPosterName = newsPosterName;
 		this.newsPosterEmail = newsPosterEmail;
 		this.newsPosterMobileNumber = newsPosterMobileNumber;
+		this.reviewedAt = reviewedAt;
+		this.deletedAt = deletedAt;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getReporterEmail() {
@@ -114,6 +132,22 @@ public class SuperAdminReportsResponse {
 	public void setReportedAt(LocalDateTime reportedAt) {
 		this.reportedAt = reportedAt;
 	}
+	
+	public LocalDateTime getReviewedAt() {
+		return reviewedAt;
+	}
+
+	public void setReviewedAt(LocalDateTime reviewdAt) {
+		this.reviewedAt = reviewdAt;
+	}
+
+	public LocalDateTime getDeletedAt() {
+		return deletedAt;
+	}
+
+	public void setDeletedAt(LocalDateTime deletedAt) {
+		this.deletedAt = deletedAt;
+	}
 
 	public String getNewsPosterName() {
 		return newsPosterName;
@@ -141,11 +175,13 @@ public class SuperAdminReportsResponse {
 
 	@Override
 	public String toString() {
-		return "SuperAdminReportsResponse [reporterEmail=" + reporterEmail + ", reporterName=" + reporterName
-				+ ", reporterMobileNumber=" + reporterMobileNumber + ", reportContent=" + reportContent
+		return "SuperAdminReportsResponse [id=" + id + ", reporterEmail=" + reporterEmail + ", reporterName="
+				+ reporterName + ", reporterMobileNumber=" + reporterMobileNumber + ", reportContent=" + reportContent
 				+ ", reportStatus=" + reportStatus + ", newsId=" + newsId + ", newsTitle=" + newsTitle + ", reportedAt="
 				+ reportedAt + ", newsPosterName=" + newsPosterName + ", newsPosterEmail=" + newsPosterEmail
-				+ ", newsPosterMobileNumber=" + newsPosterMobileNumber + "]";
+				+ ", newsPosterMobileNumber=" + newsPosterMobileNumber + ", reviewdAt=" + reviewedAt + ", deletedAt="
+				+ deletedAt + "]";
 	}
+
 
 }

@@ -7,7 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.Ilayangudi_news.exceptions.UnauthorizedAccessException;
+import com.Ilayangudi_news.exceptions.UserNotFoundException;
 import com.ilayangudi_news_posting.entity.UserRegisterData;
+import com.ilayangudi_news_posting.enums.UserAccountStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.message_services.EmailSenderService;
 import com.ilayangudi_news_posting.message_services.OtpGenerateService;
@@ -87,6 +91,7 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 			userRegisterdata.setUserMobileNumber(userDataDto.getUserMobileNumber());
 			userRegisterdata.setPassword(passwordEncoder.encode(userDataDto.getPassword()));
 			userRegisterdata.setRole(userDataDto.getRole());
+			userRegisterdata.setAccountStatus(UserAccountStatus.ACTIVE);
 
 			emailSenderService.sendEmailFromRegisteration(userRegisterdata.getEmailId(),
 					userRegisterdata.getUserName());
@@ -122,8 +127,6 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 
 			emailSenderService.sendOTPToEmail(user.getEmailId(), user.getUserName(), token);
 
-			// TODO: send token via Email/SMS (later you can integrate)
-
 //			System.out.println("Reset Token: " + token);
 
 			return true;
@@ -147,6 +150,21 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public String checkUserAccountStatus(String userEmailOrMobile) {
+	    UserRegisterData userData = userDataRepo
+	            .findByEmailIdOrUserMobileNumber(userEmailOrMobile)
+	            .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+	    return switch (userData.getAccountStatus()) {
+	        case SUSPENDED -> throw new UnauthorizedAccessException("Your account has been suspended for next 5 days.");
+	        case BANNED -> throw new UnauthorizedAccessException("Your account has been banned. Please call our company.");
+	        case DELETED -> throw new UnauthorizedAccessException("Your account has been deleted.");
+	        case null -> "";
+	        default -> "ACTIVE"; // available
+	    };
 	}
 
 }
