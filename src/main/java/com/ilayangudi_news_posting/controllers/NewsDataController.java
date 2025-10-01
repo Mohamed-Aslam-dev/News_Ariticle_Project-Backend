@@ -96,12 +96,18 @@ public class NewsDataController {
 		}
 		
 		// ✅ Generate signed URLs separately if needed
-	    latestNews.forEach(news -> {
-	        if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-	            List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
-	            news.setImageOrVideoUrl(urls);
-	        }
-	    });
+		latestNews.forEach(news -> {
+		    if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+		        List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+		        news.setImageOrVideoUrl(urls);
+		    }
+		    
+		    if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
+		        String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
+		        news.setAuthorProfileUrl(profileUrl);
+		    }
+		});
+
 
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", latestNews));
 	}
@@ -115,11 +121,17 @@ public class NewsDataController {
 		
 		// ✅ Generate signed URLs separately if needed
 		lastOneMonthNews.forEach(news -> {
-	        if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-	            List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
-	            news.setImageOrVideoUrl(urls);
-	        }
-	    });
+		    if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+		        List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+		        news.setImageOrVideoUrl(urls);
+		    }
+		    
+		    if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
+		        String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
+		        news.setAuthorProfileUrl(profileUrl);
+		    }
+		});
+
 
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthNews));
 	}

@@ -14,6 +14,7 @@ public class NewsResponseDTO {
 	private List<String> imageOrVideoUrl;
 	private String authorEmail;
 	private String authorName;
+	private String authorProfileUrl;
 	private String category;
 	private String tags;
 	private String status;
@@ -33,14 +34,15 @@ public class NewsResponseDTO {
 	}
 
 	public NewsResponseDTO(Long sNo, String newsTitle, String newsDescription, String imageOrVideoUrl,
-			String authorEmail, String authorName, String category, String tags, String status, Long views, Long likes,
-			Long unlikes, boolean likedByCurrentUser, boolean unLikedByCurrentUser, boolean viewedByCurrentUser,
-			Date createdAt, Date updatedAt) {
+			String authorEmail, String authorName, String authorProfileUrl, String category, String tags, String status,
+			Long views, Long likes, Long unlikes, boolean likedByCurrentUser, boolean unLikedByCurrentUser,
+			boolean viewedByCurrentUser, Date createdAt, Date updatedAt) {
 		this.sNo = sNo;
 		this.newsTitle = newsTitle;
 		this.newsDescription = newsDescription;
 		this.authorEmail = authorEmail;
 		this.authorName = authorName;
+		this.authorProfileUrl = authorProfileUrl;
 		// split comma-separated string into list
 		this.imageOrVideoUrl = imageOrVideoUrl != null ? Arrays.asList(imageOrVideoUrl.split(",")) : new ArrayList<>();
 		this.category = category;
@@ -102,6 +104,14 @@ public class NewsResponseDTO {
 
 	public void setAuthorName(String authorName) {
 		this.authorName = authorName;
+	}
+
+	public String getAuthorProfileUrl() {
+		return authorProfileUrl;
+	}
+
+	public void setAuthorProfileUrl(String authorProfileUrl) {
+		this.authorProfileUrl = authorProfileUrl;
 	}
 
 	public String getCategory() {
@@ -196,10 +206,10 @@ public class NewsResponseDTO {
 	public String toString() {
 		return "NewsResponseDTO [sNo=" + sNo + ", newsTitle=" + newsTitle + ", newsDescription=" + newsDescription
 				+ ", imageOrVideoUrl=" + imageOrVideoUrl + ", authorEmail=" + authorEmail + ", authorName=" + authorName
-				+ ", category=" + category + ", tags=" + tags + ", status=" + status + ", views=" + views + ", likes="
-				+ likes + ", unLikes=" + unLikes + ", likedByCurrentUser=" + likedByCurrentUser
-				+ ", unLikedByCurrentUser=" + unLikedByCurrentUser + ", viewedByCurrentUser=" + viewedByCurrentUser
-				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
+				+ ", authorProfileUrl=" + authorProfileUrl + ", category=" + category + ", tags=" + tags + ", status="
+				+ status + ", views=" + views + ", likes=" + likes + ", unLikes=" + unLikes + ", likedByCurrentUser="
+				+ likedByCurrentUser + ", unLikedByCurrentUser=" + unLikedByCurrentUser + ", viewedByCurrentUser="
+				+ viewedByCurrentUser + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
 	}
 
 }

@@ -77,6 +77,13 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 	public void addNewUser(UserRegisterDTO userDataDto, MultipartFile profilePic) {
 
 		try {
+			
+			// Check duplicate by mobile
+			if (userDataRepo.existsByUserMobileNumber(userDataDto.getUserMobileNumber())) {
+				throw new RuntimeException("இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது");
+			}
+
+			
 			UserRegisterData userRegisterdata = new UserRegisterData();
 			if (profilePic != null && !profilePic.isEmpty()) {
 				String uploadDir = "userProfilePics";

@@ -143,7 +143,7 @@ public class NewsImageAndVideoFile {
 	}
 
 	// Generate signed URL for single file
-	private String generateSignedUrl(String publicUrl, int expiryInSeconds) {
+	public String generateSignedUrl(String publicUrl, int expiryInSeconds) {
 		
 		log.info("Generating signed URL for file: {}", publicUrl);
 		

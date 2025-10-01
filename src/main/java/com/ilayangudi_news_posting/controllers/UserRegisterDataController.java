@@ -100,14 +100,14 @@ public class UserRegisterDataController {
 	}
 
 	@PostMapping("/send-otp")
-	public ResponseEntity<String> sendOtp(@RequestBody EmailVerifiedRequestDTO emailVerifiedRequest) {
+	public ResponseEntity<String> sendOtp(@RequestBody @Valid EmailVerifiedRequestDTO emailVerifiedRequest) {
 		userServiceRepo.newUserEmailVerified(emailVerifiedRequest.getEmail(), emailVerifiedRequest.getMobileNumber());
 		return ResponseEntity
 				.ok(emailVerifiedRequest.getEmail() + " இந்த மின்னஞ்சலுக்கு ஒரு முறை கடவுச்சொல்(OTP) அனுப்பபட்டது");
 	}
 
 	@PostMapping("/verify-otp")
-	public ResponseEntity<String> verifyOtp(@RequestBody OtpVerificationRequestDTO otpVerificationRequest)
+	public ResponseEntity<String> verifyOtp(@RequestBody @Valid OtpVerificationRequestDTO otpVerificationRequest)
 			throws Exception {
 		boolean isValid = otpService.verifyOtp(otpVerificationRequest.getEmail(), otpVerificationRequest.getOtp());
 

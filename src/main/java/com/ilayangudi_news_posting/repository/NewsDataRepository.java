@@ -22,6 +22,7 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 				    CAST(n.imageOrVideoUrl AS string),
 				    n.author,
 				    u.userName,
+				    u.profilePicUrl,
 				    n.category,
 				    CAST(n.tags AS string),
 				    CAST(n.status AS string),
@@ -43,7 +44,8 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 					WHERE n.status = 'PUBLISHED'
 					ORDER BY COALESCE(n.updatedAt, n.createdAt) DESC
 			""")
-	public List<NewsResponseDTO> findTop4LatestNews(Pageable pageable, @Param("currentUsername") String currentUsername);
+	public List<NewsResponseDTO> findTop4LatestNews(Pageable pageable,
+			@Param("currentUsername") String currentUsername);
 
 	@Query("""
 				    SELECT new com.ilayangudi_news_posting.response_dto.NewsResponseDTO(
@@ -53,6 +55,7 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 				    CAST(n.imageOrVideoUrl AS string),
 				    n.author,
 				    u.userName,
+				    u.profilePicUrl,
 				    n.category,
 				    CAST(n.tags AS string),
 				    CAST(n.status AS string),
@@ -86,6 +89,7 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 				    CAST(n.imageOrVideoUrl AS string),
 				    n.author,
 				    u.userName,
+				    u.profilePicUrl,
 				    n.category,
 				    CAST(n.tags AS string),
 				    CAST(n.status AS string),
@@ -120,6 +124,7 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 				    CAST(n.imageOrVideoUrl AS string),
 				    n.author,
 				    u.userName,
+				    u.profilePicUrl,
 				    n.category,
 				    CAST(n.tags AS string),
 				    CAST(n.status AS string),
@@ -154,6 +159,7 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 				    CAST(n.imageOrVideoUrl AS string),
 				    n.author,
 				    u.userName,
+				    u.profilePicUrl,
 				    n.category,
 				    CAST(n.tags AS string),
 				    CAST(n.status AS string),
@@ -179,7 +185,6 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 			""")
 	List<NewsResponseDTO> findUserArchievedNewsLastMonth(@Param("oneMonthAgo") LocalDateTime oneMonthAgo,
 			@Param("currentUsername") String currentUsername);
-	
 
 	@Query("""
 			SELECT new com.ilayangudi_news_posting.response_dto.SuperAdminAllDataResponse(
