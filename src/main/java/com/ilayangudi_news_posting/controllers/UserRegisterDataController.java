@@ -21,13 +21,16 @@ import com.ilayangudi_news_posting.configuration.AuthService;
 import com.ilayangudi_news_posting.configuration.CaptchaService;
 import com.ilayangudi_news_posting.configuration.JwtUtil;
 import com.ilayangudi_news_posting.configuration.LoginAttemptService;
+import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.message_services.OtpGenerateService;
+import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.request_dto.EmailVerifiedRequestDTO;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
 import com.ilayangudi_news_posting.request_dto.LoginRequestDTO;
 import com.ilayangudi_news_posting.request_dto.OtpVerificationRequestDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
+import com.ilayangudi_news_posting.response_dto.LoginApiResponse;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,6 +68,9 @@ public class UserRegisterDataController {
 
 	@Autowired
 	private CaptchaService captchaService;
+	
+	@Autowired
+	private UserRegisterDataRepository userRegisterDataRepo;
 
 	@PostMapping("/new-user")
 	public ResponseEntity<String> addNewUser(@RequestPart("userRegisterData") String userDataJson,
@@ -124,17 +130,17 @@ public class UserRegisterDataController {
 	public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse resp) {
 	    String key = request.getEmailOrPhone();
 	    log.info("➡️ Login attempt for key={}", key);
-	    
-	    // 🔑 Validate account status (this may throw exception handled by @RestControllerAdvice)
+
+	    // 🔑 Validate account status
 	    userServiceRepo.checkUserAccountStatus(key);
 
-	    // 1️⃣ First check if blocked (before password check)
+	    // 1️⃣ Check if blocked
 	    if (loginAttemptService.isBlocked(key)) {
 	        log.warn("🚫 Login blocked due to too many attempts. key={}", key);
 	        return ResponseEntity.status(429).body("Too many failed attempts. Try again later.");
 	    }
 
-	    // 2️⃣ Check CAPTCHA if required
+	    // 2️⃣ Check CAPTCHA
 	    if (loginAttemptService.shouldShowCaptcha(key)) {
 	        if (!captchaService.validate(request.getCaptchaResponse())) {
 	            log.error("🔒 CAPTCHA verification failed. key={} | captchaResponse={}", key, request.getCaptchaResponse());
@@ -144,30 +150,41 @@ public class UserRegisterDataController {
 	    }
 
 	    try {
-	    	
+	        // 🔐 Authenticate
 	        authManager.authenticate(new UsernamePasswordAuthenticationToken(key, request.getPassword()));
 
-	        // success -> reset attempts
+	        // ✅ Reset login attempts
 	        loginAttemptService.loginSucceeded(key);
 	        log.info("✅ Login successful. key={}", key);
 
+	        // 🧑‍💻 Load user details
 	        UserDetails userDetails = authService.loadUserByUsername(key);
 
+	        // 🔍 Get full user entity (for role)
+	        UserRegisterData userEntity = userRegisterDataRepo.findByEmailIdOrUserMobileNumber(key, key)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        // 🎫 Generate tokens
 	        String accessToken = jwtUtil.generateAccessToken(userDetails.getUsername());
 	        String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername());
 
-	        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true)
-	                .secure(false)  // on prod change to true https
-	                .path("/").sameSite("Lax").maxAge(60 * 60 * 24 * 30).build();
+	        // 🍪 Set refresh cookie
+	        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+	                .httpOnly(true)
+	                .secure(false) // change to true in prod
+	                .path("/")
+	                .sameSite("Lax")
+	                .maxAge(60 * 60 * 24 * 30)
+	                .build();
 	        resp.addHeader("Set-Cookie", refreshCookie.toString());
 
-	        return ResponseEntity.ok(Map.of("accessToken", accessToken));
+	        // 🧾 Return accessToken + role
+	        LoginApiResponse response = new LoginApiResponse(accessToken, userEntity.getRole());
+	        return ResponseEntity.ok(response);
 
 	    } catch (BadCredentialsException e) {
-	        // ❌ Increment attempts after fail
 	        loginAttemptService.loginFailed(key);
-
-	        log.error("❌ Invalid credentials. key={} | error={}", key, e.getMessage(), e);
+	        log.error("❌ Invalid credentials. key={} | error={}", key, e.getMessage());
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 	                .body("உள்நுழைவதில் சிக்கல், உங்கள் மின்னஞ்சல்/மொபைல் எண் அல்லது கடவுச்சொல்லை(Password) சரிபார்க்கவும்");
 	    } catch (Exception e) {
@@ -176,6 +193,7 @@ public class UserRegisterDataController {
 	                .body("உள்நுழைவதில் சிக்கல், உங்கள் மின்னஞ்சல்/மொபைல் எண் அல்லது கடவுச்சொல்லை(Password) சரிபார்க்கவும்");
 	    }
 	}
+
 
 
 	@PostMapping("/forget-password/request")
