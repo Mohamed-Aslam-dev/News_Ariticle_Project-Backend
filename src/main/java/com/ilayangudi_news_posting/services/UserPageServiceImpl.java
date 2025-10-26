@@ -7,11 +7,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.Ilayangudi_news.exceptions.UserNotFoundException;
 import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.repository.NewsDataRepository;
 import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
+import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.UserPageServiceRepository;
 
 @Service
@@ -68,6 +71,40 @@ public class UserPageServiceImpl implements UserPageServiceRepository {
 		return false; // already no profile pic
 
 	}
+
+	@Override
+	public UserDetailsResponseDTO getUserDetails(Principal principal) {
+
+		UserDetailsResponseDTO userDetails = userRegisterDataRepo.getUserDetails(principal.getName())
+				.orElseThrow(() -> new UserNotFoundException("User not found with email: " + principal.getName()));
+		
+		// ✅ If profilePicUrl exists, convert it to signed URL
+        if (userDetails.getProfilePicUrl() != null && !userDetails.getProfilePicUrl().isEmpty()) {
+            String signedUrl = newsFileStore.generateSignedUrl(userDetails.getProfilePicUrl(), 3600); // 1 hour
+            userDetails.setProfilePicUrl(signedUrl);
+        }
+
+		return userDetails;
+	}
+	
+	@Override
+	public void updateUserDetails(Principal principal, UserDetailsResponseDTO updatedUser) {
+	    UserRegisterData user = userRegisterDataRepo.findByEmailId(principal.getName())
+	        .orElseThrow(() -> new RuntimeException("User not found"));
+
+	    if (updatedUser.getUserName() != null) {
+	        user.setUserName(updatedUser.getUserName());
+	    }
+	    if (updatedUser.getEmailId() != null) {
+	        user.setEmailId(updatedUser.getEmailId());
+	    }
+	    if (updatedUser.getUserMobileNumber() != null) {
+	        user.setUserMobileNumber(updatedUser.getUserMobileNumber());
+	    }
+
+	    userRegisterDataRepo.save(user);
+	}
+
 
 	@Override
 	public List<NewsResponseDTO> getLastOneMonthPublishedNewsData(Principal principal) {

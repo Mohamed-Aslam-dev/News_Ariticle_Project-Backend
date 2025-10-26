@@ -194,8 +194,6 @@ public class UserRegisterDataController {
 	    }
 	}
 
-
-
 	@PostMapping("/forget-password/request")
 	public ResponseEntity<String> forgetPasswordRequest(
 			@Valid @RequestBody ForgetPasswordRequestDTO forgetPasswordRequest) {

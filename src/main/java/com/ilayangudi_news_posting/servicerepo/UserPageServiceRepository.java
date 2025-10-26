@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
+import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
 
 public interface UserPageServiceRepository {
 
@@ -18,6 +19,10 @@ public interface UserPageServiceRepository {
 	public List<NewsResponseDTO> getLastOneMonthDraftNewsData(Principal principal);
 
 	public List<NewsResponseDTO> getLastOneMonthArchievedNewsData(Principal principal);
+	
+	public UserDetailsResponseDTO getUserDetails(Principal principal);
+	
+	public void updateUserDetails(Principal principal, UserDetailsResponseDTO updatedUser);
 
 	
 }

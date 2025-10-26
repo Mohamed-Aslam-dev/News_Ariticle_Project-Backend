@@ -44,13 +44,12 @@ public class NewsDataController {
 
 	@Autowired
 	private Validator validator;
-	
+
 	@Autowired
 	private JwtUtil jwtUtil;
-	
+
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
-
 
 	@PostMapping(value = "/upload")
 	public ResponseEntity<?> uploadNews(@RequestPart("newsData") String newsDataJson,
@@ -82,32 +81,32 @@ public class NewsDataController {
 	}
 
 	@GetMapping(value = "/home", produces = "application/json")
-	public ResponseEntity<?> getNewsDataFromHomePage(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-		
+	public ResponseEntity<?> getNewsDataFromHomePage(
+			@RequestHeader(value = "Authorization", required = false) String authHeader) {
+
 		String userEmail = null;
-	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-	        String token = authHeader.substring(7);
-	        userEmail = jwtUtil.extractUsername(token);  // optional user info
-	    }
-		
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			userEmail = jwtUtil.extractUsername(token); // optional user info
+		}
+
 		List<NewsResponseDTO> latestNews = newsService.getNewsDataFromHomePage(userEmail);
 		if (latestNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
 		}
-		
+
 		// ✅ Generate signed URLs separately if needed
 		latestNews.forEach(news -> {
-		    if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-		        List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
-		        news.setImageOrVideoUrl(urls);
-		    }
-		    
-		    if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
-		        String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
-		        news.setAuthorProfileUrl(profileUrl);
-		    }
-		});
+			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+				List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+				news.setImageOrVideoUrl(urls);
+			}
 
+			if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
+				String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
+				news.setAuthorProfileUrl(profileUrl);
+			}
+		});
 
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", latestNews));
 	}
@@ -118,24 +117,22 @@ public class NewsDataController {
 		if (lastOneMonthNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>("எந்த செய்தியும் இல்லை", null));
 		}
-		
+
 		// ✅ Generate signed URLs separately if needed
 		lastOneMonthNews.forEach(news -> {
-		    if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
-		        List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
-		        news.setImageOrVideoUrl(urls);
-		    }
-		    
-		    if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
-		        String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
-		        news.setAuthorProfileUrl(profileUrl);
-		    }
-		});
+			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+				List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+				news.setImageOrVideoUrl(urls);
+			}
 
+			if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
+				String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
+				news.setAuthorProfileUrl(profileUrl);
+			}
+		});
 
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthNews));
 	}
-
 
 //	@PutMapping("/update-news/{id}")
 //	public ResponseEntity<?> updateNewsData(@PathVariable Long id,
@@ -173,18 +170,19 @@ public class NewsDataController {
 	public ResponseEntity<ViewedResponseDTO> addView(@PathVariable Long id, Principal principal) {
 		return ResponseEntity.ok(newsService.addView(id, principal.getName()));
 	}
-	
+
 	@PostMapping("/{id}/report")
-	public ResponseEntity<?> addReport(@PathVariable Long id, @Valid @RequestBody NewsReportDTO newsReportData, Principal principal){
-	    
-		System.out.println("DEBUG Content = " + newsReportData.getReportContent());
-	    boolean isReported = newsService.addNewsReport(id, newsReportData, principal);
-	    if(!isReported) {
-	        return ResponseEntity.status(HttpStatus.CONFLICT)
-	                             .body("You have already reported this news!");
-	    }
-	    
-	    return ResponseEntity.ok("Your report has been saved successfully");
+	public ResponseEntity<?> addReport(@PathVariable Long id, @Valid @RequestBody NewsReportDTO newsReportData,
+			Principal principal) {
+
+		boolean isReported = newsService.addNewsReport(id, newsReportData, principal);
+		if (!isReported) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body("நீங்கள் ஏற்கனவே இந்த செய்தியை புகாரளித்துள்ளீர்கள்!");
+		}
+
+		return ResponseEntity.ok("உங்கள் புகார் வெற்றிகரமாக சேமிக்கப்பட்டது!");
+
 	}
 
 	@PatchMapping("/post/{id}/archived")

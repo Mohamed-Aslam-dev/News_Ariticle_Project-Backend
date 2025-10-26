@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.ilayangudi_news_posting.entity.UserRegisterData;
+import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
 
 @Repository
 public interface UserRegisterDataRepository extends JpaRepository<UserRegisterData, Long> {
@@ -17,14 +18,27 @@ public interface UserRegisterDataRepository extends JpaRepository<UserRegisterDa
 	boolean existsByEmailId(String emailId);
 
 	boolean existsByUserMobileNumber(String userMobileNumber);
-	
+
 	Optional<UserRegisterData> findByResetToken(String resetToken);
 
 	Optional<UserRegisterData> findByEmailId(String email);
-	
+
 	boolean existsByEmailIdAndRole(String emailId, String role);
 
 	Optional<UserRegisterData> findByEmailIdOrUserMobileNumber(String emailId, String mobileNumber);
 
-	
+	@Query("""
+			    SELECT new com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO(
+			        u.id,
+			        u.profilePicUrl,
+			        u.userName,
+			        u.emailId,
+			        u.userMobileNumber,
+			        u.accountStatus
+			    )
+			    FROM UserRegisterData u
+			    WHERE u.emailId = :userName
+			""")
+	Optional<UserDetailsResponseDTO> getUserDetails(String userName);
+
 }

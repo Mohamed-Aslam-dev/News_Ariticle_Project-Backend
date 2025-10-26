@@ -8,12 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.ilayangudi_news_posting.response_dto.ApiResponse;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
+import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.UserPageServiceRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,7 +26,6 @@ public class UserPageController {
 
 	@Autowired
 	private UserPageServiceRepository userPageServiceRepo;
-	
 
 	@PatchMapping("/mod/profile")
 	public ResponseEntity<String> changeUserProfile(@RequestPart("newProfile") MultipartFile newUserProfile,
@@ -47,10 +48,27 @@ public class UserPageController {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 				.body("ஏற்கனவே நீங்கள் சுயவிவர புகைபடம்(Profile) பதிவேற்றவில்லை");
 	}
-	
+
+	@GetMapping("/details")
+	public ResponseEntity<UserDetailsResponseDTO> getUserDetails(Principal principal) {
+
+		UserDetailsResponseDTO userDetails = userPageServiceRepo.getUserDetails(principal);
+
+		return ResponseEntity.ok(userDetails);
+	}
+
+	@PatchMapping("/update-user-details")
+	public ResponseEntity<String> updateUserDetails(Principal principal,
+			@RequestBody UserDetailsResponseDTO updatedUser) {
+
+		userPageServiceRepo.updateUserDetails(principal, updatedUser);
+		return ResponseEntity.ok("User details updated successfully!");
+	}
+
 	@GetMapping("/news/published")
 	public ResponseEntity<?> getLastOneMonthPublishedNewsData(Principal principal) {
-		List<NewsResponseDTO> lastOneMonthPublishedNews = userPageServiceRepo.getLastOneMonthPublishedNewsData(principal);
+		List<NewsResponseDTO> lastOneMonthPublishedNews = userPageServiceRepo
+				.getLastOneMonthPublishedNewsData(principal);
 
 		if (lastOneMonthPublishedNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(
@@ -63,7 +81,8 @@ public class UserPageController {
 
 	@GetMapping("/news/archived")
 	public ResponseEntity<?> getLastOneMonthArchivedNewsData(Principal principal) {
-		List<NewsResponseDTO> lastOneMonthArchievedNews = userPageServiceRepo.getLastOneMonthArchievedNewsData(principal);
+		List<NewsResponseDTO> lastOneMonthArchievedNews = userPageServiceRepo
+				.getLastOneMonthArchievedNewsData(principal);
 
 		if (lastOneMonthArchievedNews.isEmpty()) {
 			return ResponseEntity.ok(new ApiResponse<>(
