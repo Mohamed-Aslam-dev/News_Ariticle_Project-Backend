@@ -28,7 +28,6 @@ import com.ilayangudi_news_posting.response_dto.ViewedResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.NewsDataServiceRepository;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;

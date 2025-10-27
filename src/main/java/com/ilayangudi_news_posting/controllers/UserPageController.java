@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.response_dto.ApiResponse;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
@@ -26,6 +28,9 @@ public class UserPageController {
 
 	@Autowired
 	private UserPageServiceRepository userPageServiceRepo;
+
+	@Autowired
+	private NewsImageAndVideoFile newsFileStore;
 
 	@PatchMapping("/mod/profile")
 	public ResponseEntity<String> changeUserProfile(@RequestPart("newProfile") MultipartFile newUserProfile,
@@ -76,6 +81,19 @@ public class UserPageController {
 					null));
 		}
 
+		// ✅ Generate signed URLs separately if needed
+		lastOneMonthPublishedNews.forEach(news -> {
+			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+				List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+				news.setImageOrVideoUrl(urls);
+			}
+
+			if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
+				String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
+				news.setAuthorProfileUrl(profileUrl);
+			}
+		});
+
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthPublishedNews));
 	}
 
@@ -90,6 +108,19 @@ public class UserPageController {
 					null));
 		}
 
+		// ✅ Generate signed URLs separately if needed
+		lastOneMonthArchievedNews.forEach(news -> {
+			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+				List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+				news.setImageOrVideoUrl(urls);
+			}
+
+			if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
+				String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
+				news.setAuthorProfileUrl(profileUrl);
+			}
+		});
+
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthArchievedNews));
 	}
 
@@ -102,6 +133,19 @@ public class UserPageController {
 					"நீங்கள் எந்த செய்தியும் வரைவு நிலையில் வைக்கவில்லை / It looks like you haven’t Drafted any posts.",
 					null));
 		}
+
+		// ✅ Generate signed URLs separately if needed
+		lastOneMonthDraftedNews.forEach(news -> {
+			if (news.getImageOrVideoUrl() != null && !news.getImageOrVideoUrl().isEmpty()) {
+				List<String> urls = newsFileStore.generateSignedUrls(news.getImageOrVideoUrl(), 60);
+				news.setImageOrVideoUrl(urls);
+			}
+
+			if (news.getAuthorProfileUrl() != null && !news.getAuthorProfileUrl().isEmpty()) {
+				String profileUrl = newsFileStore.generateSignedUrl(news.getAuthorProfileUrl(), 60);
+				news.setAuthorProfileUrl(profileUrl);
+			}
+		});
 
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthDraftedNews));
 	}
