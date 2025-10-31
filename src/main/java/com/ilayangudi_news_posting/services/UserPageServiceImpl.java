@@ -77,34 +77,46 @@ public class UserPageServiceImpl implements UserPageServiceRepository {
 
 		UserDetailsResponseDTO userDetails = userRegisterDataRepo.getUserDetails(principal.getName())
 				.orElseThrow(() -> new UserNotFoundException("User not found with email: " + principal.getName()));
-		
+
 		// ✅ If profilePicUrl exists, convert it to signed URL
-        if (userDetails.getProfilePicUrl() != null && !userDetails.getProfilePicUrl().isEmpty()) {
-            String signedUrl = newsFileStore.generateSignedUrl(userDetails.getProfilePicUrl(), 3600); // 1 hour
-            userDetails.setProfilePicUrl(signedUrl);
-        }
+		if (userDetails.getProfilePicUrl() != null && !userDetails.getProfilePicUrl().isEmpty()) {
+			String signedUrl = newsFileStore.generateSignedUrl(userDetails.getProfilePicUrl(), 3600); // 1 hour
+			userDetails.setProfilePicUrl(signedUrl);
+		}
 
 		return userDetails;
 	}
-	
+
 	@Override
 	public void updateUserDetails(Principal principal, UserDetailsResponseDTO updatedUser) {
-	    UserRegisterData user = userRegisterDataRepo.findByEmailId(principal.getName())
-	        .orElseThrow(() -> new RuntimeException("User not found"));
 
-	    if (updatedUser.getUserName() != null) {
-	        user.setUserName(updatedUser.getUserName());
-	    }
-	    if (updatedUser.getEmailId() != null) {
-	        user.setEmailId(updatedUser.getEmailId());
-	    }
-	    if (updatedUser.getUserMobileNumber() != null) {
-	        user.setUserMobileNumber(updatedUser.getUserMobileNumber());
-	    }
+		UserRegisterData existing = userRegisterDataRepo.findByEmailId(principal.getName())
+				.orElseThrow(() -> new RuntimeException("User not found"));
 
-	    userRegisterDataRepo.save(user);
+		// 🔹 Update username
+		if (updatedUser.getUserName() != null && !updatedUser.getUserName().isBlank()) {
+			existing.setUserName(updatedUser.getUserName());
+		}
+
+		// 🔹 Update email only if changed and not duplicate
+		if (updatedUser.getEmailId() != null && !updatedUser.getEmailId().equals(existing.getEmailId())) {
+			if (userRegisterDataRepo.existsByEmailId(updatedUser.getEmailId())) {
+				throw new RuntimeException("இந்த மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது");
+			}
+			existing.setEmailId(updatedUser.getEmailId());
+		}
+
+		// 🔹 Update mobile only if changed and not duplicate
+		if (updatedUser.getUserMobileNumber() != null
+				&& !updatedUser.getUserMobileNumber().equals(existing.getUserMobileNumber())) {
+			if (userRegisterDataRepo.existsByUserMobileNumber(updatedUser.getUserMobileNumber())) {
+				throw new RuntimeException("இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது");
+			}
+			existing.setUserMobileNumber(updatedUser.getUserMobileNumber());
+		}
+
+		userRegisterDataRepo.save(existing);
 	}
-
 
 	@Override
 	public List<NewsResponseDTO> getLastOneMonthPublishedNewsData(Principal principal) {

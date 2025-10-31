@@ -2,10 +2,8 @@ package com.ilayangudi_news_posting.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.Ilayangudi_news.exceptions.ResourcesNotFoundException;
 import com.Ilayangudi_news.exceptions.UnauthorizedAccessException;
 import com.ilayangudi_news_posting.entity.NewsData;
@@ -19,7 +17,6 @@ import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.response_dto.SuperAdminAllDataResponse;
 import com.ilayangudi_news_posting.response_dto.SuperAdminReportsResponse;
 import com.ilayangudi_news_posting.servicerepo.SuperAdminServiceRepository;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -52,6 +49,7 @@ public class SuperAdminServiceImpl implements SuperAdminServiceRepository {
 
 	@Override
 	public List<SuperAdminReportsResponse> getAllReportsDataForSuperAdmin(String userName) {
+
 		boolean isValid = userRegisterDataRepo.existsByEmailIdAndRole(userName, "SUPER_ADMIN");
 
 		if (!isValid) {
@@ -90,11 +88,11 @@ public class SuperAdminServiceImpl implements SuperAdminServiceRepository {
 
 		switch (report.getReason()) {
 		case REVIEWED -> {
-			
-			if(report == null || newsData == null) {
+
+			if (report == null || newsData == null) {
 				throw new RuntimeException("This message has been Already Deleted");
 			}
-			
+
 			emailSenderService
 					.sendEmailPostReportReminderFromReviewedStatus(newsAuthor.getEmailId(), newsAuthor.getUserName(),
 							newsData.getsNo(), newsData.getNewsTitle(), report.getsNo(), report.getReportContent())
@@ -107,11 +105,11 @@ public class SuperAdminServiceImpl implements SuperAdminServiceRepository {
 		}
 
 		case REJECTED -> {
-			
-			if(report == null || newsData == null) {
+
+			if (report == null || newsData == null) {
 				throw new RuntimeException("This message has been Already Deleted");
 			}
-			
+
 			emailSenderService
 					.sendEmailPostReportReminderFromRejectedStatus(newsAuthor.getEmailId(), newsAuthor.getUserName(),
 							newsData.getsNo(), newsData.getNewsTitle(), report.getsNo(), report.getReportContent())
@@ -129,15 +127,10 @@ public class SuperAdminServiceImpl implements SuperAdminServiceRepository {
 					});
 			report.setReviewedAt(null);
 		}
-		
-		case DELETED -> {
-		    newsDataRepo.delete(newsData); // cascade deletes related reports
-		    log.info("Deleted news {} along with its reports", newsData.getsNo());
-		}
 
-        default -> {
-            log.info("No action for status: {}", report.getReason());
-        }
+		default -> {
+			log.info("No action for status: {}", report.getReason());
+		}
 		}
 	}
 

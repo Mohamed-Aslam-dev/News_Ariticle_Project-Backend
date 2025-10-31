@@ -168,7 +168,6 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 	    return switch (userData.getAccountStatus()) {
 	        case SUSPENDED -> throw new UnauthorizedAccessException("Your account has been suspended for next 5 days.");
 	        case BANNED -> throw new UnauthorizedAccessException("Your account has been banned. Please call our company.");
-	        case DELETED -> throw new UnauthorizedAccessException("Your account has been deleted.");
 	        case null -> "";
 	        default -> "ACTIVE"; // available
 	    };

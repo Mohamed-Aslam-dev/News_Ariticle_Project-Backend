@@ -2,11 +2,10 @@ package com.ilayangudi_news_posting.entity;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-
 import org.hibernate.annotations.CreationTimestamp;
-
 import com.ilayangudi_news_posting.enums.UserAccountStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -31,6 +30,7 @@ public class UserRegisterData {
 	private String role;
 	private String resetToken;
 	@Enumerated(EnumType.STRING)
+	@Column(name = "account_status")
 	private UserAccountStatus accountStatus;
 	private LocalDateTime suspendedAt;
 	private LocalDateTime bannedAt;
