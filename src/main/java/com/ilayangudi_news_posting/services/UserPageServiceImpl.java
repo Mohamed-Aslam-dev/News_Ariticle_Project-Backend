@@ -17,6 +17,8 @@ import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.UserPageServiceRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class UserPageServiceImpl implements UserPageServiceRepository {
 
@@ -118,6 +120,17 @@ public class UserPageServiceImpl implements UserPageServiceRepository {
 		userRegisterDataRepo.save(existing);
 	}
 
+	@Override
+	@Transactional
+	public boolean deleteUserData(Principal principal) {
+	    String userEmail = principal.getName();
+	    UserRegisterData user = userRegisterDataRepo.findByEmailId(userEmail)
+	        .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+	    userRegisterDataRepo.deleteById(user.getId());
+	    return true;
+	}
+	
 	@Override
 	public List<NewsResponseDTO> getLastOneMonthPublishedNewsData(Principal principal) {
 		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);

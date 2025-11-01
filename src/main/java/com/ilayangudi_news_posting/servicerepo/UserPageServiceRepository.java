@@ -23,6 +23,8 @@ public interface UserPageServiceRepository {
 	public UserDetailsResponseDTO getUserDetails(Principal principal);
 	
 	public void updateUserDetails(Principal principal, UserDetailsResponseDTO updatedUser);
+	
+	boolean deleteUserData(Principal principal);
 
 	
 }

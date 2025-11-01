@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -133,25 +134,6 @@ public class NewsDataController {
 		return ResponseEntity.ok(new ApiResponse<>("வெற்றி", lastOneMonthNews));
 	}
 
-//	@PutMapping("/update-news/{id}")
-//	public ResponseEntity<?> updateNewsData(@PathVariable Long id,
-//	                                        @Valid @RequestBody NewsDataDTO dto) {
-//	    NewsData existing = newsDataRepository.findById(id)
-//	            .orElseThrow(() -> new RuntimeException("News not found with id: " + id));
-//
-//	    // ✅ Update only fields from DTO
-//	    existing.setNewsTitle(dto.getNewsTitle());
-//	    existing.setNewsDescription(dto.getNewsDescription());
-//	    existing.setCategory(dto.getCategory());
-//	    existing.setTags(dto.getTags());
-//	    existing.setStatus(dto.getStatus());
-//
-//	    // Auto fields (views, likes, reports, createdAt) untouched
-//	    newsDataRepository.save(existing);
-//
-//	    return ResponseEntity.ok("News updated successfully!");
-//	}
-
 	// 👍 Like increment
 	@PatchMapping("/{id}/like")
 	public ResponseEntity<LikeResponseDTO> toggleLike(@PathVariable Long id, Principal principal) {
@@ -219,5 +201,18 @@ public class NewsDataController {
 					.body("இது நீங்கள் உருவாக்கிய செய்தி அல்ல அல்லது செய்தி இல்லை.");
 		}
 	}
+	
+	@DeleteMapping("/del/{id}")
+	public ResponseEntity<String> deleteNews(@PathVariable Long id, Principal principal) {
+	    boolean deleted = newsService.deleteNewsData(id, principal);
+
+	    if (deleted) {
+	        return ResponseEntity.ok("News deleted successfully!");
+	    } else {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("Failed to delete news. Please try again.");
+	    }
+	}
+
 
 }

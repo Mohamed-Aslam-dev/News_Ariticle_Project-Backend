@@ -33,5 +33,7 @@ public interface NewsDataServiceRepository {
 	public boolean newsPostMoveToDraft(Long id, Principal principal);
 
 	public boolean newsPostMoveToPublished(Long id, Principal principal);
+	
+	public boolean deleteNewsData(Long id, Principal principal);
 
 }

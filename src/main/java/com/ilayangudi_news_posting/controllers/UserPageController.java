@@ -69,6 +69,17 @@ public class UserPageController {
 		return ResponseEntity.ok("User details updated successfully!");
 	}
 
+	@DeleteMapping("/del")
+	public ResponseEntity<String> deleteUserDetails(Principal principal) {
+		boolean isDeleted = userPageServiceRepo.deleteUserData(principal);
+
+		if (isDeleted) {
+			return ResponseEntity.ok("உங்களுடைய கணக்கு வெற்றிகரமாக நீக்கப்பட்டது!");
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("நீங்கள் யார் என்று என்னால் அறிய முடியவில்லை, அதனால் நீக்கமுடியாது.");
+		}
+	}
+
 	@GetMapping("/news/published")
 	public ResponseEntity<?> getLastOneMonthPublishedNewsData(Principal principal) {
 		List<NewsResponseDTO> lastOneMonthPublishedNews = userPageServiceRepo

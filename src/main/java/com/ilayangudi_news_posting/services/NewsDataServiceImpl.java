@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.Ilayangudi_news.exceptions.ResourcesNotFoundException;
 import com.ilayangudi_news_posting.entity.NewsData;
 import com.ilayangudi_news_posting.entity.NewsEngagedStatus;
@@ -38,7 +37,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
-    private final EmailSenderService emailSenderService;
+	private final EmailSenderService emailSenderService;
 
 	@Autowired
 	private NewsDataRepository newsDataRepository;
@@ -58,9 +57,9 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
 
-    NewsDataServiceImpl(EmailSenderService emailSenderService) {
-        this.emailSenderService = emailSenderService;
-    }
+	NewsDataServiceImpl(EmailSenderService emailSenderService) {
+		this.emailSenderService = emailSenderService;
+	}
 
 	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] files, Principal principal) {
 		try {
@@ -222,47 +221,36 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	@Override
 	public boolean addNewsReport(Long newsId, NewsReportDTO newsReportData, Principal principal) {
 
-	    // ✅ Check if report already exists
-	    boolean exists = newsReportRepo.existsByUserEmailAndNews_sNo(principal.getName(), newsId);
-	    if (exists) return false;
+		// ✅ Check if report already exists
+		boolean exists = newsReportRepo.existsByUserEmailAndNews_sNo(principal.getName(), newsId);
+		if (exists)
+			return false;
 
-	    // ✅ Fetch reporter
-	    UserRegisterData reporter = userRegisterDataRepo.findByEmailId(principal.getName())
-	            .orElseThrow(() -> new RuntimeException("Reporter not found"));
+		// ✅ Fetch reporter
+		UserRegisterData reporter = userRegisterDataRepo.findByEmailId(principal.getName())
+				.orElseThrow(() -> new RuntimeException("Reporter not found"));
 
-	    // ✅ Fetch news
-	    NewsData news = newsDataRepository.findById(newsId)
-	            .orElseThrow(() -> new ResourcesNotFoundException("News not found"));
+		// ✅ Fetch news
+		NewsData news = newsDataRepository.findById(newsId)
+				.orElseThrow(() -> new ResourcesNotFoundException("News not found"));
 
-	    // ✅ Create and save report
-	    NewsReports report = NewsReports.builder()
-	            .userEmail(reporter.getEmailId())
-	            .userName(reporter.getUserName())
-	            .userMobileNumber(reporter.getUserMobileNumber())
-	            .reportContent(newsReportData.getReportContent())
-	            .reason(newsReportData.getReasonMode())
-	            .news(news)
-	            .build();
+		// ✅ Create and save report
+		NewsReports report = NewsReports.builder().userEmail(reporter.getEmailId()).userName(reporter.getUserName())
+				.userMobileNumber(reporter.getUserMobileNumber()).reportContent(newsReportData.getReportContent())
+				.reason(newsReportData.getReasonMode()).news(news).build();
 
-	    newsReportRepo.save(report);
+		newsReportRepo.save(report);
 
-	    // ✅ Fetch news author
-	    UserRegisterData newsAuthor = userRegisterDataRepo.findByEmailId(news.getAuthor())
-	            .orElseThrow(() -> new RuntimeException("News author not found"));
+		// ✅ Fetch news author
+		UserRegisterData newsAuthor = userRegisterDataRepo.findByEmailId(news.getAuthor())
+				.orElseThrow(() -> new RuntimeException("News author not found"));
 
-	    // ✅ Send email asynchronously
-	    emailSenderService.sendEmailPostReportReminderFromNewStatus(
-	            newsAuthor.getEmailId(),
-	            newsAuthor.getUserName(),
-	            news.getsNo(),
-	            news.getNewsTitle(),
-	            report.getsNo(),
-	            report.getReportContent()
-	    );
+		// ✅ Send email asynchronously
+		emailSenderService.sendEmailPostReportReminderFromNewStatus(newsAuthor.getEmailId(), newsAuthor.getUserName(),
+				news.getsNo(), news.getNewsTitle(), report.getsNo(), report.getReportContent());
 
-	    return true;
+		return true;
 	}
-
 
 	public boolean newsPostMoveToArchive(Long id, Principal principal) {
 		Optional<NewsData> optionalNews = newsDataRepository.findById(id);
@@ -322,6 +310,26 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
 		news.setStatus(NewsStatus.PUBLISHED);
 		newsDataRepository.save(news);
+
+		return true;
+	}
+
+	@Override
+	@Transactional
+	public boolean deleteNewsData(Long id, Principal principal) {
+		String loggedInUser = principal.getName();
+
+		// Step 1: Find the news by ID
+		NewsData news = newsDataRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("News not found with ID: " + id));
+
+		// Step 2: Check if logged-in user is the author
+		if (!news.getAuthor().equalsIgnoreCase(loggedInUser)) {
+			throw new RuntimeException("You are not authorized to delete this news post!");
+		}
+
+		// Step 3: Delete the news (cascades will handle related data)
+		newsDataRepository.delete(news);
 
 		return true;
 	}
