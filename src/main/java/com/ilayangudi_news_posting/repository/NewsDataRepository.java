@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -201,4 +202,108 @@ public interface NewsDataRepository extends JpaRepository<NewsData, Long> {
 			""")
 	SuperAdminAllDataResponse findAllDatasResponseForSuperAdmin();
 
+	@Modifying
+	@Query("UPDATE NewsData n SET n.author = :newEmail WHERE n.author = :oldEmail")
+	void updateAuthorEmail(String oldEmail, String newEmail);
+
+	// 🔍 Search by Title (case-insensitive)
+    @Query("""
+        SELECT new com.ilayangudi_news_posting.response_dto.NewsResponseDTO(
+            n.sNo,
+            n.newsTitle,
+            n.newsDescription,
+            CAST(n.imageOrVideoUrl AS string),
+            n.author,
+            u.userName,
+            u.profilePicUrl,
+            n.category,
+            CAST(n.tags AS string),
+            CAST(n.status AS string),
+            COALESCE(e.views, 0),
+            COALESCE(e.likes, 0),
+            COALESCE(e.unLikes, 0),
+            COALESCE(m.liked, false),
+            COALESCE(m.disliked, false),
+            COALESCE(m.viewed, false),
+            n.createdAt,
+            n.updatedAt
+        )
+        FROM NewsData n
+        LEFT JOIN NewsEngagedStatus e ON e.news = n
+        LEFT JOIN UserRegisterData u ON u.emailId = n.author
+        LEFT JOIN NewsUserEngagement m ON m.news = n
+        WHERE LOWER(n.newsTitle) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        ORDER BY COALESCE(n.updatedAt, n.createdAt) DESC
+    """)
+    List<NewsResponseDTO> searchByTitle(
+        @Param("keyword") String keyword
+    );
+
+    // 🔍 Search by News ID Range
+    @Query("""
+        SELECT new com.ilayangudi_news_posting.response_dto.NewsResponseDTO(
+            n.sNo,
+            n.newsTitle,
+            n.newsDescription,
+            CAST(n.imageOrVideoUrl AS string),
+            n.author,
+            u.userName,
+            u.profilePicUrl,
+            n.category,
+            CAST(n.tags AS string),
+            CAST(n.status AS string),
+            COALESCE(e.views, 0),
+            COALESCE(e.likes, 0),
+            COALESCE(e.unLikes, 0),
+            COALESCE(m.liked, false),
+            COALESCE(m.disliked, false),
+            COALESCE(m.viewed, false),
+            n.createdAt,
+            n.updatedAt
+        )
+        FROM NewsData n
+        LEFT JOIN NewsEngagedStatus e ON e.news = n
+        LEFT JOIN UserRegisterData u ON u.emailId = n.author
+        LEFT JOIN NewsUserEngagement m ON m.news = n
+        WHERE n.sNo BETWEEN :startId AND :endId
+        ORDER BY COALESCE(n.updatedAt, n.createdAt) DESC
+    """)
+    List<NewsResponseDTO> searchByIdRange(
+        @Param("startId") Long startId,
+        @Param("endId") Long endId
+    );
+    
+    // 🔍 Search by News ID
+    @Query("""
+        SELECT new com.ilayangudi_news_posting.response_dto.NewsResponseDTO(
+            n.sNo,
+            n.newsTitle,
+            n.newsDescription,
+            CAST(n.imageOrVideoUrl AS string),
+            n.author,
+            u.userName,
+            u.profilePicUrl,
+            n.category,
+            CAST(n.tags AS string),
+            CAST(n.status AS string),
+            COALESCE(e.views, 0),
+            COALESCE(e.likes, 0),
+            COALESCE(e.unLikes, 0),
+            COALESCE(m.liked, false),
+            COALESCE(m.disliked, false),
+            COALESCE(m.viewed, false),
+            n.createdAt,
+            n.updatedAt
+        )
+        FROM NewsData n
+        LEFT JOIN NewsEngagedStatus e ON e.news = n
+        LEFT JOIN UserRegisterData u ON u.emailId = n.author
+        LEFT JOIN NewsUserEngagement m ON m.news = n
+        WHERE n.sNo = :newsId
+        ORDER BY COALESCE(n.updatedAt, n.createdAt) DESC
+    """)
+    List<NewsResponseDTO> searchById(
+        @Param("newsId") Long newsId
+    );
+	
 }

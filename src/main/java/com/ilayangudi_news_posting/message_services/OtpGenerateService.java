@@ -2,16 +2,11 @@ package com.ilayangudi_news_posting.message_services;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.ilayangudi_news_posting.repository.OtpRepository;
-import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 
 @Service
 public class OtpGenerateService {
@@ -69,7 +64,7 @@ public class OtpGenerateService {
 		boolean isValid = passwordEncoder.matches(otp, data.getOtp());
 
 		if (isValid)
-			otpRepo.delete(data); // one-time use
+			otpRepo.delete(data); //one-time use
 
 		return isValid;
 	}

@@ -207,7 +207,7 @@ public class NewsDataController {
 	    boolean deleted = newsService.deleteNewsData(id, principal);
 
 	    if (deleted) {
-	        return ResponseEntity.ok("News deleted successfully!");
+	        return ResponseEntity.ok("தங்களுடைய செய்தி வெற்றிகரமாக நீக்கப்பட்டது!");
 	    } else {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
 	                .body("Failed to delete news. Please try again.");

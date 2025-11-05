@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.Ilayangudi_news.exceptions.UnauthorizedAccessException;
 import com.Ilayangudi_news.exceptions.UserNotFoundException;
 import com.ilayangudi_news_posting.entity.UserRegisterData;
@@ -15,14 +14,12 @@ import com.ilayangudi_news_posting.enums.UserAccountStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.message_services.EmailSenderService;
 import com.ilayangudi_news_posting.message_services.OtpGenerateService;
-import com.ilayangudi_news_posting.message_services.SmsService;
 import com.ilayangudi_news_posting.repository.OtpRepository;
 import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -45,8 +42,8 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
 
-	@Autowired
-	private SmsService smsService;
+//	@Autowired
+//	private SmsService smsService;
 
 	@Autowired
 	private OtpGenerateService otpGenerateService;

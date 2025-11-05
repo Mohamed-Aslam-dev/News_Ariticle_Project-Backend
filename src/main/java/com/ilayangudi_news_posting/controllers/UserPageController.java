@@ -2,22 +2,33 @@ package com.ilayangudi_news_posting.controllers;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.ilayangudi_news_posting.configuration.JwtUtil;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
+import com.ilayangudi_news_posting.message_services.OtpGenerateService;
+import com.ilayangudi_news_posting.request_dto.OtpVerificationRequestDTO;
 import com.ilayangudi_news_posting.response_dto.ApiResponse;
 import com.ilayangudi_news_posting.response_dto.NewsResponseDTO;
 import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
 import com.ilayangudi_news_posting.servicerepo.UserPageServiceRepository;
+
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -29,7 +40,13 @@ public class UserPageController {
 	private UserPageServiceRepository userPageServiceRepo;
 
 	@Autowired
+	private OtpGenerateService otpService;
+
+	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
+
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	@PatchMapping("/mod/profile")
 	public ResponseEntity<String> changeUserProfile(@RequestPart("newProfile") MultipartFile newUserProfile,
@@ -65,8 +82,41 @@ public class UserPageController {
 	public ResponseEntity<String> updateUserDetails(Principal principal,
 			@RequestBody UserDetailsResponseDTO updatedUser) {
 
-		userPageServiceRepo.updateUserDetails(principal, updatedUser);
-		return ResponseEntity.ok("User details updated successfully!");
+		// 🔹 Capture message returned from service
+		String message = userPageServiceRepo.updateUserDetails(principal, updatedUser);
+
+		// 🔹 Return it to frontend
+		return ResponseEntity.ok(message);
+	}
+
+	@PostMapping("/verify-otp")
+	public ResponseEntity<Map<String, String>> verifyOtp(
+			@RequestBody @Valid OtpVerificationRequestDTO otpVerificationRequest, HttpServletResponse resp)
+			throws Exception {
+
+		boolean isValid = otpService.verifyOtp(otpVerificationRequest.getEmail(), otpVerificationRequest.getOtp());
+
+		if (!isValid) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(Map.of("message", "OTP தவறானது அல்லது காலாவதியானது."));
+		}
+
+		// ✅ Commit pending email change
+		userPageServiceRepo.confirmEmailChange(otpVerificationRequest.getEmail());
+
+		// ✅ Generate new tokens
+		String newAccessToken = jwtUtil.generateAccessToken(otpVerificationRequest.getEmail());
+		String newRefreshToken = jwtUtil.generateRefreshToken(otpVerificationRequest.getEmail());
+
+		// ✅ Set refresh token as cookie (same as login)
+		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken).httpOnly(true).secure(false)
+				.path("/").sameSite("Lax").maxAge(60 * 60 * 24 * 30) // 30 days
+				.build();
+		resp.addHeader("Set-Cookie", refreshCookie.toString());
+
+		// ✅ Return accessToken + success message
+		return ResponseEntity.status(HttpStatus.ACCEPTED)
+				.body(Map.of("message", "மின்னஞ்சல் வெற்றிகரமாக மாற்றப்பட்டது ✅", "accessToken", newAccessToken));
 	}
 
 	@DeleteMapping("/del")
@@ -76,7 +126,8 @@ public class UserPageController {
 		if (isDeleted) {
 			return ResponseEntity.ok("உங்களுடைய கணக்கு வெற்றிகரமாக நீக்கப்பட்டது!");
 		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("நீங்கள் யார் என்று என்னால் அறிய முடியவில்லை, அதனால் நீக்கமுடியாது.");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body("நீங்கள் யார் என்று என்னால் அறிய முடியவில்லை, அதனால் நீக்கமுடியாது.");
 		}
 	}
 

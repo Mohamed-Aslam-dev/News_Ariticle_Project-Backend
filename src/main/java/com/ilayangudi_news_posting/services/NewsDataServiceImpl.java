@@ -328,6 +328,16 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 			throw new RuntimeException("You are not authorized to delete this news post!");
 		}
 
+		// ✅ Step 3: Delete all files (image/video URLs)
+		List<String> urls = news.getImageOrVideoUrl(); // 👈 Already a List<String>
+		if (urls != null && !urls.isEmpty()) {
+			for (String fileUrl : urls) {
+				if (fileUrl != null && !fileUrl.isBlank()) {
+					newsFileStore.deleteFileFromSupabase(fileUrl.trim());
+				}
+			}
+		}
+
 		// Step 3: Delete the news (cascades will handle related data)
 		newsDataRepository.delete(news);
 

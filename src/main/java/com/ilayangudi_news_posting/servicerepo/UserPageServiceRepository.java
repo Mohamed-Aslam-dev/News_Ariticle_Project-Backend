@@ -22,9 +22,11 @@ public interface UserPageServiceRepository {
 	
 	public UserDetailsResponseDTO getUserDetails(Principal principal);
 	
-	public void updateUserDetails(Principal principal, UserDetailsResponseDTO updatedUser);
+	public String updateUserDetails(Principal principal, UserDetailsResponseDTO updatedUser);
 	
 	boolean deleteUserData(Principal principal);
+	
+	public void confirmEmailChange(String verifiedEmail);
 
 	
 }

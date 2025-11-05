@@ -46,4 +46,21 @@ public interface UserRegisterDataRepository extends JpaRepository<UserRegisterDa
 
 	List<UserRegisterData> findByAccountStatusAndSuspendedAtBefore(UserAccountStatus status, LocalDateTime dateTime);
 
+	Optional<UserRegisterData> findByPendingEmailChange(String verifiedEmail);
+
+	@Query("""
+			    SELECT new com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO(
+			        u.id,
+			        u.profilePicUrl,
+			        u.userName,
+			        u.emailId,
+			        u.userMobileNumber,
+			        u.accountStatus
+			    )
+			    FROM UserRegisterData u
+			    WHERE LOWER(u.userName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			       OR LOWER(u.emailId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			""")
+	List<UserDetailsResponseDTO> getUserDetailsBySuperAdmin(@Param("keyword") String keyword);
+
 }

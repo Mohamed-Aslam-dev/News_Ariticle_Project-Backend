@@ -34,10 +34,12 @@ public class UserRegisterData {
 	private LocalDateTime suspendedAt;
 	private LocalDateTime bannedAt;
 	private LocalDateTime resetTokenExpiry;
-	
+
 	@CreationTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdAt;
+
+	private String pendingEmailChange;
 
 	public UserRegisterData() {
 
@@ -45,7 +47,7 @@ public class UserRegisterData {
 
 	public UserRegisterData(Long id, String profilePicUrl, String userName, String emailId, String userMobileNumber,
 			String password, String role, String resetToken, UserAccountStatus accountStatus, LocalDateTime suspendedAt,
-			LocalDateTime bannedAt, LocalDateTime resetTokenExpiry, Date createdAt) {
+			LocalDateTime bannedAt, LocalDateTime resetTokenExpiry, Date createdAt, String pendingEmailChange) {
 		super();
 		this.id = id;
 		this.profilePicUrl = profilePicUrl;
@@ -60,6 +62,7 @@ public class UserRegisterData {
 		this.bannedAt = bannedAt;
 		this.resetTokenExpiry = resetTokenExpiry;
 		this.createdAt = createdAt;
+		this.pendingEmailChange = pendingEmailChange;
 	}
 
 	public Long getId() {
@@ -133,7 +136,7 @@ public class UserRegisterData {
 	public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) {
 		this.resetTokenExpiry = resetTokenExpiry;
 	}
-	
+
 	public UserAccountStatus getAccountStatus() {
 		return accountStatus;
 	}
@@ -141,7 +144,7 @@ public class UserRegisterData {
 	public void setAccountStatus(UserAccountStatus accountStatus) {
 		this.accountStatus = accountStatus;
 	}
-	
+
 	public LocalDateTime getSuspendedAt() {
 		return suspendedAt;
 	}
@@ -166,13 +169,21 @@ public class UserRegisterData {
 		this.createdAt = createdAt;
 	}
 
+	public String getPendingEmailChange() {
+		return pendingEmailChange;
+	}
+
+	public void setPendingEmailChange(String pendingEmailChange) {
+		this.pendingEmailChange = pendingEmailChange;
+	}
+
 	@Override
 	public String toString() {
 		return "UserRegisterData [id=" + id + ", profilePicUrl=" + profilePicUrl + ", userName=" + userName
 				+ ", emailId=" + emailId + ", userMobileNumber=" + userMobileNumber + ", password=" + password
 				+ ", role=" + role + ", resetToken=" + resetToken + ", accountStatus=" + accountStatus
 				+ ", suspendedAt=" + suspendedAt + ", bannedAt=" + bannedAt + ", resetTokenExpiry=" + resetTokenExpiry
-				+ ", createdAt=" + createdAt + "]";
+				+ ", createdAt=" + createdAt + ", pendingEmailChange=" + pendingEmailChange + "]";
 	}
 
 }
