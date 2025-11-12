@@ -19,6 +19,7 @@ import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.enums.NewsStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.message_services.EmailSenderService;
+import com.ilayangudi_news_posting.message_services.NotificationService;
 import com.ilayangudi_news_posting.repository.NewsDataRepository;
 import com.ilayangudi_news_posting.repository.NewsReportRepository;
 import com.ilayangudi_news_posting.repository.NewsStatusRepository;
@@ -57,6 +58,9 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
 
+	@Autowired
+	private NotificationService notificationService;
+
 	NewsDataServiceImpl(EmailSenderService emailSenderService) {
 		this.emailSenderService = emailSenderService;
 	}
@@ -64,12 +68,16 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 	public void addANewsData(NewsDataDTO newsDataDto, MultipartFile[] files, Principal principal) {
 		try {
 			String uploadFolder = "newsUploads";
-			List<String> imagePaths = newsFileStore.getNewsImageAndVideoFilepaths(files, uploadFolder);
+			List<String> imagePaths = List.of(); // default empty list
+
+			if (files != null && files.length > 0) {
+				imagePaths = newsFileStore.getNewsImageAndVideoFilepaths(files, uploadFolder);
+			}
 
 			NewsData newsData = new NewsData();
 			newsData.setNewsTitle(newsDataDto.getNewsTitle());
 			newsData.setNewsDescription(newsDataDto.getNewsDescription());
-			newsData.setImageOrVideoUrl(imagePaths); // ✅ multiple files
+			newsData.setImageOrVideoUrl(imagePaths);
 			newsData.setAuthor(principal.getName());
 			newsData.setCategory(newsDataDto.getCategory());
 			newsData.setTags(newsDataDto.getTags());
@@ -77,6 +85,17 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
 			newsDataRepository.save(newsData);
 
+			// ✅ Fetch news author and liker
+			UserRegisterData newsAuthor = userRegisterDataRepo.findByEmailId(principal.getName())
+					.orElseThrow(() -> new RuntimeException("News author not found"));
+
+			// ✅ 🔔 Send push notification before email
+			if (newsAuthor.getDeviceToken() != null) {
+				String title = "🔥 You Post a News!";
+				String body = newsAuthor.getUserName() + " You posted a new news: \"" + newsData.getNewsTitle() + "\"";
+				notificationService.sendCustomNotification(newsAuthor.getDeviceToken(), title, body,
+						newsAuthor.getEmailId());
+			}
 		} catch (IOException e) {
 			throw new RuntimeException("Error while saving news file", e);
 		}
@@ -146,6 +165,26 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 
 		newsUserEngagementRepo.save(engagement);
 		newsStatusRepository.save(status);
+
+		// ✅ Fetch news author and liker
+		UserRegisterData newsAuthor = userRegisterDataRepo.findByEmailId(news.getAuthor())
+				.orElseThrow(() -> new RuntimeException("News author not found"));
+		UserRegisterData liker = userRegisterDataRepo.findByEmailId(username)
+				.orElseThrow(() -> new RuntimeException("Liker not found"));
+
+		System.out.println("Run to notfications....");
+		// ✅ 🔔 Send push notification before email
+		if (newsAuthor.getDeviceToken() != null && likedNow) {
+			String title = "🔥 New Like on Your Post!";
+			String body = liker.getUserName() + " liked your news: \"" + news.getNewsTitle() + "\"";
+			notificationService.sendCustomNotification(newsAuthor.getDeviceToken(), title, body, newsAuthor.getEmailId()
+
+			);
+
+		}
+
+		System.out.println("Complete send to notfications....");
+
 		return new LikeResponseDTO(news.getsNo(), status.getLikes(), likedNow);
 	}
 
@@ -244,6 +283,15 @@ public class NewsDataServiceImpl implements NewsDataServiceRepository {
 		// ✅ Fetch news author
 		UserRegisterData newsAuthor = userRegisterDataRepo.findByEmailId(news.getAuthor())
 				.orElseThrow(() -> new RuntimeException("News author not found"));
+
+		// ✅ 🔔 Send push notification before email
+		if (newsAuthor.getDeviceToken() != null) {
+			String reporterName = reporter.getUserName();
+			String title = "⚠️ News Report Alert!";
+			String body = "Your news '" + news.getNewsTitle() + "' has been reported by " + reporterName + ".";
+			notificationService.sendCustomNotification(newsAuthor.getDeviceToken(), title, body,
+					newsAuthor.getEmailId());
+		}
 
 		// ✅ Send email asynchronously
 		emailSenderService.sendEmailPostReportReminderFromNewStatus(newsAuthor.getEmailId(), newsAuthor.getUserName(),

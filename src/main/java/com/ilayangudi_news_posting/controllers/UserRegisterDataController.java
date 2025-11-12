@@ -1,5 +1,6 @@
 package com.ilayangudi_news_posting.controllers;
 
+import java.security.Principal;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ import com.ilayangudi_news_posting.request_dto.EmailVerifiedRequestDTO;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
 import com.ilayangudi_news_posting.request_dto.LoginRequestDTO;
+import com.ilayangudi_news_posting.request_dto.NotificationDevicetokenDTO;
 import com.ilayangudi_news_posting.request_dto.OtpVerificationRequestDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.response_dto.LoginApiResponse;
@@ -254,6 +256,18 @@ public class UserRegisterDataController {
 		// 🔙 Return both token + role (same as login)
 		LoginApiResponse responseDto = new LoginApiResponse(newAccessToken, userEntity.getRole());
 		return ResponseEntity.ok(responseDto);
+	}
+
+	//Update notification device token
+	@PostMapping("/update-dev-token")
+	public ResponseEntity<?> updateDeviceToken(@RequestBody NotificationDevicetokenDTO updateDevicetoken,
+			Principal principal) { // JWT-la irundhu username/ email get pannum
+
+		String username = principal.getName(); // JWT user info
+
+		userServiceRepo.updateDeviceToken(updateDevicetoken, username);
+
+		return ResponseEntity.ok("Device token updated securely ✅");
 	}
 
 	@PostMapping("/logout")

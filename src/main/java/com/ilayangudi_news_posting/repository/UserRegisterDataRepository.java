@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.enums.UserAccountStatus;
 import com.ilayangudi_news_posting.response_dto.UserDetailsResponseDTO;
+
+import jakarta.transaction.Transactional;
 
 @Repository
 public interface UserRegisterDataRepository extends JpaRepository<UserRegisterData, Long> {
@@ -62,5 +65,10 @@ public interface UserRegisterDataRepository extends JpaRepository<UserRegisterDa
 			       OR LOWER(u.emailId) LIKE LOWER(CONCAT('%', :keyword, '%'))
 			""")
 	List<UserDetailsResponseDTO> getUserDetailsBySuperAdmin(@Param("keyword") String keyword);
+
+	@Modifying
+	@Transactional
+	@Query("UPDATE UserRegisterData u SET u.deviceToken = NULL WHERE u.emailId = :emailId")
+	void clearDeviceToken(@Param("emailId") String emailId);
 
 }

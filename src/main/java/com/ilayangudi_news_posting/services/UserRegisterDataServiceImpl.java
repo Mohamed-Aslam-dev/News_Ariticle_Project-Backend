@@ -13,11 +13,13 @@ import com.ilayangudi_news_posting.entity.UserRegisterData;
 import com.ilayangudi_news_posting.enums.UserAccountStatus;
 import com.ilayangudi_news_posting.file_service.NewsImageAndVideoFile;
 import com.ilayangudi_news_posting.message_services.EmailSenderService;
+import com.ilayangudi_news_posting.message_services.NotificationService;
 import com.ilayangudi_news_posting.message_services.OtpGenerateService;
 import com.ilayangudi_news_posting.repository.OtpRepository;
 import com.ilayangudi_news_posting.repository.UserRegisterDataRepository;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordDto;
 import com.ilayangudi_news_posting.request_dto.ForgetPasswordRequestDTO;
+import com.ilayangudi_news_posting.request_dto.NotificationDevicetokenDTO;
 import com.ilayangudi_news_posting.request_dto.UserRegisterDTO;
 import com.ilayangudi_news_posting.servicerepo.UserRegisterDataServiceRepository;
 import jakarta.transaction.Transactional;
@@ -41,6 +43,9 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 
 	@Autowired
 	private NewsImageAndVideoFile newsFileStore;
+
+	@Autowired
+	private NotificationService notificationService;
 
 //	@Autowired
 //	private SmsService smsService;
@@ -74,13 +79,12 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 	public void addNewUser(UserRegisterDTO userDataDto, MultipartFile profilePic) {
 
 		try {
-			
+
 			// Check duplicate by mobile
 			if (userDataRepo.existsByUserMobileNumber(userDataDto.getUserMobileNumber())) {
 				throw new RuntimeException("இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது");
 			}
 
-			
 			UserRegisterData userRegisterdata = new UserRegisterData();
 			if (profilePic != null && !profilePic.isEmpty()) {
 				String uploadDir = "userProfilePics";
@@ -96,11 +100,18 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 			userRegisterdata.setPassword(passwordEncoder.encode(userDataDto.getPassword()));
 			userRegisterdata.setRole(userDataDto.getRole());
 			userRegisterdata.setAccountStatus(UserAccountStatus.ACTIVE);
+			userRegisterdata.setDeviceToken(userDataDto.getDeviceToken()); // 👈 add this field in DTO + entity
+
+			userDataRepo.save(userRegisterdata);
 
 			emailSenderService.sendEmailFromRegisteration(userRegisterdata.getEmailId(),
 					userRegisterdata.getUserName());
 
-			userDataRepo.save(userRegisterdata);
+			// ✅ Send welcome notification (if device token available)
+			if (userRegisterdata.getDeviceToken() != null && !userRegisterdata.getDeviceToken().isEmpty()) {
+				notificationService.sendWelcomeNotification(userRegisterdata.getDeviceToken(),
+						userRegisterdata.getUserName());
+			}
 
 		} catch (IOException e) {
 			// log & rethrow as runtime so global handler can catch
@@ -155,19 +166,26 @@ public class UserRegisterDataServiceImpl implements UserRegisterDataServiceRepos
 		}
 		return false;
 	}
-	
+
+	public void updateDeviceToken(NotificationDevicetokenDTO updateDeeviceToken, String userName) {
+		UserRegisterData user = userDataRepo.findByEmailId(userName)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+
+		user.setDeviceToken(updateDeeviceToken.getDeviceToken());
+		userDataRepo.save(user);
+	}
+
 	@Override
 	public String checkUserAccountStatus(String userEmailOrMobile) {
-	    UserRegisterData userData = userDataRepo
-	            .findByEmailIdOrUserMobileNumber(userEmailOrMobile)
-	            .orElseThrow(() -> new UserNotFoundException("User not found"));
+		UserRegisterData userData = userDataRepo.findByEmailIdOrUserMobileNumber(userEmailOrMobile)
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
 
-	    return switch (userData.getAccountStatus()) {
-	        case SUSPENDED -> throw new UnauthorizedAccessException("Your account has been suspended for next 5 days.");
-	        case BANNED -> throw new UnauthorizedAccessException("Your account has been banned. Please call our company.");
-	        case null -> "";
-	        default -> "ACTIVE"; // available
-	    };
+		return switch (userData.getAccountStatus()) {
+		case SUSPENDED -> throw new UnauthorizedAccessException("Your account has been suspended for next 5 days.");
+		case BANNED -> throw new UnauthorizedAccessException("Your account has been banned. Please call our company.");
+		case null -> "";
+		default -> "ACTIVE"; // available
+		};
 	}
 
 }

@@ -40,6 +40,9 @@ public class UserRegisterData {
 	private Date createdAt;
 
 	private String pendingEmailChange;
+	
+	private String deviceToken;
+
 
 	public UserRegisterData() {
 
@@ -47,7 +50,8 @@ public class UserRegisterData {
 
 	public UserRegisterData(Long id, String profilePicUrl, String userName, String emailId, String userMobileNumber,
 			String password, String role, String resetToken, UserAccountStatus accountStatus, LocalDateTime suspendedAt,
-			LocalDateTime bannedAt, LocalDateTime resetTokenExpiry, Date createdAt, String pendingEmailChange) {
+			LocalDateTime bannedAt, LocalDateTime resetTokenExpiry, Date createdAt, String pendingEmailChange,
+			String deviceToken) {
 		super();
 		this.id = id;
 		this.profilePicUrl = profilePicUrl;
@@ -63,6 +67,7 @@ public class UserRegisterData {
 		this.resetTokenExpiry = resetTokenExpiry;
 		this.createdAt = createdAt;
 		this.pendingEmailChange = pendingEmailChange;
+		this.deviceToken = deviceToken;
 	}
 
 	public Long getId() {
@@ -177,13 +182,23 @@ public class UserRegisterData {
 		this.pendingEmailChange = pendingEmailChange;
 	}
 
+	public String getDeviceToken() {
+		return deviceToken;
+	}
+
+	public void setDeviceToken(String deviceToken) {
+		this.deviceToken = deviceToken;
+	}
+
 	@Override
 	public String toString() {
 		return "UserRegisterData [id=" + id + ", profilePicUrl=" + profilePicUrl + ", userName=" + userName
 				+ ", emailId=" + emailId + ", userMobileNumber=" + userMobileNumber + ", password=" + password
 				+ ", role=" + role + ", resetToken=" + resetToken + ", accountStatus=" + accountStatus
 				+ ", suspendedAt=" + suspendedAt + ", bannedAt=" + bannedAt + ", resetTokenExpiry=" + resetTokenExpiry
-				+ ", createdAt=" + createdAt + ", pendingEmailChange=" + pendingEmailChange + "]";
+				+ ", createdAt=" + createdAt + ", pendingEmailChange=" + pendingEmailChange + ", deviceToken="
+				+ deviceToken + "]";
 	}
+
 
 }

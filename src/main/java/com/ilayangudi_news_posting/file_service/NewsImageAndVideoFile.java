@@ -82,10 +82,16 @@ public class NewsImageAndVideoFile {
     }
 
 	public List<String> getNewsImageAndVideoFilepaths(MultipartFile[] files, String folder) throws IOException {
-		return Flux.fromArray(files).filter(file -> !file.isEmpty())
-				.flatMap(file -> Mono.fromCallable(() -> getNewsImageAndVideoFilepath(file, folder))).collectList()
-				.block(); // waits for all uploads
+	    if (files == null || files.length == 0) {
+	        return List.of();
+	    }
+	    return Flux.fromArray(files)
+	            .filter(file -> !file.isEmpty())
+	            .flatMap(file -> Mono.fromCallable(() -> getNewsImageAndVideoFilepath(file, folder)))
+	            .collectList()
+	            .block();
 	}
+
 
 	public String getNewsImageAndVideoFilepath(MultipartFile file, String folder) throws IOException {
 		try {

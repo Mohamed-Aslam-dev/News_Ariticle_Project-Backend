@@ -24,6 +24,8 @@ public class UserRegisterDTO {
 	
 	private String role = "USER";
 	
+	private String deviceToken;
+	
 	@JsonProperty("isEmailVerified")
 	private boolean emailVerified = false;
 
@@ -35,17 +37,16 @@ public class UserRegisterDTO {
 			@NotBlank(message = "மின்னஞ்சல் காலியாக இருக்கக்கூடாது") @Email(message = "சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்") String emailId,
 			@NotBlank(message = "மொபைல் எண் காலியாக இருக்கக்கூடாது") @Pattern(regexp = "^[0-9]{10}$", message = "மொபைல் எண் 10 இலக்கமாக இருக்க வேண்டும்") String userMobileNumber,
 			@NotBlank(message = "கடவுச்சொல் காலியாக இருக்கக்கூடாது") @Size(min = 6, message = "கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்") @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{6,}$", message = "கடவுச்சொல் குறைந்தது 1 பெரிய எழுத்து, 1 சிறிய எழுத்து, 1 எண் மற்றும் 1–3 சிறப்பு எழுத்துக்கள் கொண்டிருக்க வேண்டும்") String password,
-			String role, boolean emailVerified) {
+			String role, String deviceToken, boolean emailVerified) {
 		super();
 		this.userName = userName;
 		this.emailId = emailId;
 		this.userMobileNumber = userMobileNumber;
 		this.password = password;
 		this.role = role;
+		this.deviceToken = deviceToken;
 		this.emailVerified = emailVerified;
 	}
-
-
 
 	public String getUserName() {
 		return userName;
@@ -88,6 +89,14 @@ public class UserRegisterDTO {
 		this.role = role;
 	}
 
+	public String getDeviceToken() {
+		return deviceToken;
+	}
+
+	public void setDeviceToken(String deviceToken) {
+		this.deviceToken = deviceToken;
+	}
+
 	public boolean isEmailVerified() {
 	    return emailVerified;
 	}
@@ -96,12 +105,12 @@ public class UserRegisterDTO {
 	    this.emailVerified = emailVerified;
 	}
 
-
 	@Override
 	public String toString() {
 		return "UserRegisterDTO [userName=" + userName + ", emailId=" + emailId + ", userMobileNumber="
-				+ userMobileNumber + ", password=" + password + ", role=" + role + ", emailVerified=" + emailVerified
-				+ "]";
+				+ userMobileNumber + ", password=" + password + ", role=" + role + ", deviceToken=" + deviceToken
+				+ ", emailVerified=" + emailVerified + "]";
 	}
+
 
 }

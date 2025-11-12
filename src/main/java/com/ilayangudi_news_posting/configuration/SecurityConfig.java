@@ -12,69 +12,62 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import jakarta.servlet.http.HttpServletResponse;
-
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
+	@Autowired
+	private JwtFilter jwtFilter;
 
-    @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-        .cors(withDefaults())   // ✅ enable CORS support
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/new-user", "/auth/send-otp", "/auth/verify-otp", "/auth/user-login", "/auth/refresh", "/auth/forget-password/**","/news/home", "/images/**", "/actuator/**", "/user/verify-otp").permitAll()   // login & register open
-                .requestMatchers("/news/**","/user/**").hasAnyRole("USER", "SUPER_ADMIN") // news protected
-                .requestMatchers("/super/v1/**").hasRole("SUPER_ADMIN")
-                .requestMatchers("/auth/logout").authenticated()
-                .anyRequest().denyAll()
-            )
-            // ✅ Correctly placed session management for JWT (stateless)
-            .sessionManagement(session -> 
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable()).cors(withDefaults()) // ✅ enable CORS support
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/auth/new-user", "/auth/send-otp", "/auth/verify-otp", "/auth/user-login",
+								"/auth/refresh", "/auth/forget-password/**", "/news/home", "/images/**", "/actuator/**",
+								"/user/verify-otp")
+						.permitAll() // login & register open
+						.requestMatchers("/news/**", "/user/**", "/auth/update-dev-token")
+						.hasAnyRole("USER", "SUPER_ADMIN") // news protected
+						.requestMatchers("/super/v1/**", "/auth/update-dev-token").hasRole("SUPER_ADMIN")
+						.requestMatchers("/auth/logout").authenticated().anyRequest().denyAll())
+				// ✅ Correctly placed session management for JWT (stateless)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // ✅ Add JWT filter before UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+		// ✅ Add JWT filter before UsernamePasswordAuthenticationFilter
+		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-     // Custom access denied handling
-        http.exceptionHandling(handling -> handling
-            .accessDeniedHandler((request, response, accessDeniedException) -> {
-                response.setContentType("application/json;charset=UTF-8");
-                String path = request.getRequestURI();
-                String message;
+		// Custom access denied handling
+		http.exceptionHandling(handling -> handling.accessDeniedHandler((request, response, accessDeniedException) -> {
+			response.setContentType("application/json;charset=UTF-8");
+			String path = request.getRequestURI();
+			String message;
 
-                if (path.startsWith("/super/v1/")) {
-                    message = "சூப்பர் அட்மின் தரவை அணுக உங்களுக்கு அனுமதி இல்லை";
-                } else if (path.startsWith("/news/") || path.startsWith("/user/")) {
-                    message = "இந்த API-க்கு உங்களுக்கு USER role தேவை";
-                } else {
-                    message = "உங்களுக்கு இந்த resource-ஐ அணுக அனுமதி இல்லை";
-                }
+			if (path.startsWith("/super/v1/")) {
+				message = "சூப்பர் அட்மின் தரவை அணுக உங்களுக்கு அனுமதி இல்லை";
+			} else if (path.startsWith("/news/") || path.startsWith("/user/")) {
+				message = "இந்த API-க்கு உங்களுக்கு USER role தேவை";
+			} else {
+				message = "உங்களுக்கு இந்த resource-ஐ அணுக அனுமதி இல்லை";
+			}
 
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("{\"message\":\"" + message + "\"}");
-            })
-        );
+			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			response.getWriter().write("{\"message\":\"" + message + "\"}");
+		}));
 
-        return http.build();
-    }
-    
-    
+		return http.build();
+	}
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-    @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+	@Bean
+	AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
 }
